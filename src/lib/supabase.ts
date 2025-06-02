@@ -4,11 +4,28 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
+// Create a mock client when Supabase is not configured
+const createMockClient = () => ({
+  auth: {
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    signInWithPassword: () => Promise.resolve({ error: new Error('Supabase not configured') }),
+    signUp: () => Promise.resolve({ error: new Error('Supabase not configured') }),
+    signOut: () => Promise.resolve({ error: new Error('Supabase not configured') }),
+  },
+  from: () => ({
+    select: () => ({ error: new Error('Supabase not configured') }),
+    insert: () => ({ error: new Error('Supabase not configured') }),
+    update: () => ({ error: new Error('Supabase not configured') }),
+    delete: () => ({ error: new Error('Supabase not configured') }),
+  }),
+});
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMockClient();
+
+export const isSupabaseConnected = !!(supabaseUrl && supabaseAnonKey);
 
 // Types for database tables
 export interface AnalysisResult {

@@ -1,7 +1,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConnected } from '@/lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  isConnected: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +21,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isSupabaseConnected) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -40,6 +46,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!isSupabaseConnected) {
+      throw new Error('Please connect Supabase to enable authentication');
+    }
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -48,6 +57,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string) => {
+    if (!isSupabaseConnected) {
+      throw new Error('Please connect Supabase to enable authentication');
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -56,6 +68,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    if (!isSupabaseConnected) {
+      throw new Error('Please connect Supabase to enable authentication');
+    }
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   };
@@ -67,6 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signUp,
     signOut,
     loading,
+    isConnected: isSupabaseConnected,
   };
 
   return (

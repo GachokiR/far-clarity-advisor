@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { ComplianceAnalysis } from "@/components/ComplianceAnalysis";
@@ -7,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, FileText, AlertTriangle, CheckCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("upload");
   const [analysisResults, setAnalysisResults] = useState(null);
+  const { isConnected } = useAuth();
 
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
@@ -30,7 +32,14 @@ const Index = () => {
                 <p className="text-sm text-gray-600">FAR Compliance Expert</p>
               </div>
             </div>
-            <Button variant="outline">Sign In</Button>
+            <div className="flex items-center space-x-3">
+              <Badge variant={isConnected ? "default" : "secondary"}>
+                {isConnected ? "Supabase Connected" : "Demo Mode"}
+              </Badge>
+              <Button variant="outline">
+                {isConnected ? "Sign In" : "Connect Supabase"}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -46,6 +55,13 @@ const Index = () => {
             Translate complex government contracting requirements into clear, actionable guidance. 
             Upload documents, analyze FAR clauses, and get compliance checklists.
           </p>
+          {!isConnected && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800">
+                <strong>Demo Mode:</strong> Connect Supabase to enable full authentication and data persistence features.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Quick Stats */}
