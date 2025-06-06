@@ -1,23 +1,53 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FileUpload } from "@/components/FileUpload";
 import { ComplianceAnalysis } from "@/components/ComplianceAnalysis";
 import { Dashboard } from "@/components/Dashboard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, FileText, AlertTriangle, CheckCircle } from "lucide-react";
+import { Shield, FileText, AlertTriangle, CheckCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("upload");
   const [analysisResults, setAnalysisResults] = useState(null);
-  const { isConnected } = useAuth();
+  const { user, signOut, loading, isConnected } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to auth if not logged in and Supabase is connected
+  useEffect(() => {
+    if (!loading && isConnected && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, isConnected, navigate]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
     setActiveTab("results");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="h-12 w-12 text-blue-600 mx-auto mb-4 animate-pulse" />
+          <p className="text-lg text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -36,9 +66,19 @@ const Index = () => {
               <Badge variant={isConnected ? "default" : "secondary"}>
                 {isConnected ? "Supabase Connected" : "Demo Mode"}
               </Badge>
-              <Button variant="outline">
-                {isConnected ? "Sign In" : "Connect Supabase"}
-              </Button>
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-600">{user.email}</span>
+                  <Button variant="outline" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <Button onClick={() => navigate("/auth")}>
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -55,10 +95,10 @@ const Index = () => {
             Translate complex government contracting requirements into clear, actionable guidance. 
             Upload documents, analyze FAR clauses, and get compliance checklists.
           </p>
-          {!isConnected && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800">
-                <strong>Demo Mode:</strong> Connect Supabase to enable full authentication and data persistence features.
+          {!user && isConnected && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800">
+                <strong>Please sign in</strong> to access full functionality and save your analysis results.
               </p>
             </div>
           )}

@@ -9,7 +9,72 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      analysis_results: {
+        Row: {
+          analysis_data: Json
+          created_at: string
+          document_name: string
+          id: string
+          risk_level: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_data?: Json
+          created_at?: string
+          document_name: string
+          id?: string
+          risk_level: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json
+          created_at?: string
+          document_name?: string
+          id?: string
+          risk_level?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      compliance_checklists: {
+        Row: {
+          created_at: string
+          estimated_cost: string | null
+          far_clause: string
+          id: string
+          requirements: string[]
+          status: string
+          timeframe: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_cost?: string | null
+          far_clause: string
+          id?: string
+          requirements?: string[]
+          status?: string
+          timeframe?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estimated_cost?: string | null
+          far_clause?: string
+          id?: string
+          requirements?: string[]
+          status?: string
+          timeframe?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
