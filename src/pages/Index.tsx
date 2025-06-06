@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FileUpload } from "@/components/FileUpload";
 import { ComplianceAnalysis } from "@/components/ComplianceAnalysis";
 import { Dashboard } from "@/components/Dashboard";
+import { UserProfile } from "@/components/UserProfile";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -138,11 +139,12 @@ const Index = () => {
 
         {/* Main Application Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="upload">Document Upload</TabsTrigger>
             <TabsTrigger value="analysis">FAR Analysis</TabsTrigger>
             <TabsTrigger value="results">Results</TabsTrigger>
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload" className="mt-6">
@@ -189,6 +191,10 @@ const Index = () => {
 
           <TabsContent value="dashboard" className="mt-6">
             <Dashboard />
+          </TabsContent>
+
+          <TabsContent value="profile" className="mt-6">
+            <UserProfile />
           </TabsContent>
         </Tabs>
       </main>

@@ -5,7 +5,8 @@ import { AnalysisResult } from '@/lib/supabase';
 export const saveAnalysisResult = async (
   documentName: string,
   analysisData: any,
-  riskLevel: 'low' | 'medium' | 'high'
+  riskLevel: 'low' | 'medium' | 'high',
+  documentUrl?: string
 ) => {
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -19,7 +20,8 @@ export const saveAnalysisResult = async (
       user_id: user.id,
       document_name: documentName,
       analysis_data: analysisData,
-      risk_level: riskLevel
+      risk_level: riskLevel,
+      document_url: documentUrl
     })
     .select()
     .single();

@@ -14,6 +14,7 @@ export type Database = {
           analysis_data: Json
           created_at: string
           document_name: string
+          document_url: string | null
           id: string
           risk_level: string
           updated_at: string
@@ -23,6 +24,7 @@ export type Database = {
           analysis_data?: Json
           created_at?: string
           document_name: string
+          document_url?: string | null
           id?: string
           risk_level: string
           updated_at?: string
@@ -32,6 +34,7 @@ export type Database = {
           analysis_data?: Json
           created_at?: string
           document_name?: string
+          document_url?: string | null
           id?: string
           risk_level?: string
           updated_at?: string
@@ -72,6 +75,39 @@ export type Database = {
           timeframe?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

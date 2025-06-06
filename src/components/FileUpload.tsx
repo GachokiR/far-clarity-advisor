@@ -1,24 +1,33 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, AlertCircle, CheckCircle } from "lucide-react";
+import { Upload, FileText, AlertCircle, CheckCircle, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { saveAnalysisResult } from "@/services/analysisService";
 import { saveComplianceChecklist } from "@/services/complianceService";
+import { uploadDocument, deleteDocument } from "@/services/storageService";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FileUploadProps {
   onAnalysisComplete: (results: any) => void;
+}
+
+interface UploadedFile {
+  file: File;
+  storagePath?: string;
+  publicUrl?: string;
+  status: 'uploading' | 'uploaded' | 'error';
 }
 
 export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -45,27 +54,105 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
   };
 
   const handleFiles = async (files: File[]) => {
-    setUploadedFiles(files);
-    setIsAnalyzing(true);
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to upload documents.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newFiles: UploadedFile[] = files.map(file => ({
+      file,
+      status: 'uploading'
+    }));
+    
+    setUploadedFiles(newFiles);
     setUploadProgress(0);
 
     try {
-      // Simulate file upload progress
+      // Upload files to storage
+      const uploadPromises = newFiles.map(async (fileItem, index) => {
+        try {
+          const { fileName, publicUrl } = await uploadDocument(fileItem.file, user.id);
+          
+          setUploadedFiles(prev => 
+            prev.map((item, i) => 
+              i === index 
+                ? { ...item, storagePath: fileName, publicUrl, status: 'uploaded' as const }
+                : item
+            )
+          );
+          
+          return { fileName, publicUrl };
+        } catch (error) {
+          console.error(`Error uploading ${fileItem.file.name}:`, error);
+          setUploadedFiles(prev => 
+            prev.map((item, i) => 
+              i === index 
+                ? { ...item, status: 'error' as const }
+                : item
+            )
+          );
+          throw error;
+        }
+      });
+
+      // Simulate upload progress
       for (let i = 0; i <= 100; i += 10) {
         setUploadProgress(i);
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Simulate FAR analysis
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const uploadResults = await Promise.allSettled(uploadPromises);
+      const successfulUploads = uploadResults
+        .filter((result): result is PromiseFulfilledResult<{fileName: string; publicUrl: string}> => 
+          result.status === 'fulfilled'
+        )
+        .map(result => result.value);
 
-      // Generate mock analysis results
+      if (successfulUploads.length === 0) {
+        throw new Error('No files were successfully uploaded');
+      }
+
+      setIsAnalyzing(true);
+
+      // Simulate FAR analysis with enhanced processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Generate enhanced mock analysis results
       const mockResults = {
-        documentsAnalyzed: files.length,
+        documentsAnalyzed: successfulUploads.length,
+        documentsUploaded: successfulUploads.map(upload => ({
+          fileName: upload.fileName,
+          url: upload.publicUrl
+        })),
         farClausesDetected: [
-          { clause: "FAR 52.219-14", title: "Limitations on Subcontracting", risk: "High", cost: "$5,000", timeframe: "2-3 weeks" },
-          { clause: "FAR 52.204-10", title: "Reporting Executive Compensation", risk: "Medium", cost: "$2,500", timeframe: "1 week" },
-          { clause: "FAR 52.222-50", title: "Combating Trafficking in Persons", risk: "Low", cost: "$1,000", timeframe: "3-5 days" }
+          { 
+            clause: "FAR 52.219-14", 
+            title: "Limitations on Subcontracting", 
+            risk: "High", 
+            cost: "$5,000", 
+            timeframe: "2-3 weeks",
+            description: "Requires prime contractor to perform minimum percentage of work with own employees"
+          },
+          { 
+            clause: "FAR 52.204-10", 
+            title: "Reporting Executive Compensation", 
+            risk: "Medium", 
+            cost: "$2,500", 
+            timeframe: "1 week",
+            description: "Annual reporting of executive compensation for government contracts"
+          },
+          { 
+            clause: "FAR 52.222-50", 
+            title: "Combating Trafficking in Persons", 
+            risk: "Low", 
+            cost: "$1,000", 
+            timeframe: "3-5 days",
+            description: "Compliance plan and employee awareness training required"
+          }
         ],
         riskAssessment: {
           highRisk: 1,
@@ -73,14 +160,20 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
           lowRisk: 1
         },
         estimatedComplianceCost: "$8,500",
-        estimatedTimeframe: "4-6 weeks"
+        estimatedTimeframe: "4-6 weeks",
+        processingDetails: {
+          documentTypes: ["RFP", "Contract", "Solicitation"],
+          pagesProcessed: files.reduce((sum, file) => sum + Math.floor(file.size / 1024), 0),
+          keywordsFound: ["subcontracting", "compensation", "trafficking", "small business"]
+        }
       };
 
-      // Save analysis result to database
+      // Save analysis result to database with document URL
       const analysisResult = await saveAnalysisResult(
         files[0].name,
         mockResults,
-        'medium' // Risk level based on the analysis
+        'medium',
+        successfulUploads[0]?.publicUrl
       );
 
       // Save compliance checklists for each detected FAR clause
@@ -88,10 +181,11 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
         await saveComplianceChecklist(
           clause.clause,
           [
-            "Review contract requirements",
-            "Implement compliance procedures",
-            "Train staff on requirements",
-            "Establish monitoring system"
+            "Review contract requirements and applicable regulations",
+            "Develop internal compliance procedures and documentation",
+            "Train relevant staff on compliance requirements",
+            "Establish monitoring and reporting systems",
+            "Conduct regular compliance audits"
           ],
           clause.cost,
           clause.timeframe
@@ -103,18 +197,41 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
 
       toast({
         title: "Analysis Complete",
-        description: `Successfully analyzed ${files.length} document(s) and saved ${mockResults.farClausesDetected.length} compliance checklists.`,
+        description: `Successfully analyzed ${successfulUploads.length} document(s) and saved ${mockResults.farClausesDetected.length} compliance checklists.`,
       });
 
     } catch (error) {
       setIsAnalyzing(false);
-      console.error('Error saving analysis:', error);
+      console.error('Error processing files:', error);
       toast({
         title: "Error",
-        description: "Failed to save analysis results. Please try again.",
+        description: "Failed to process files. Please try again.",
         variant: "destructive"
       });
     }
+  };
+
+  const handleDeleteFile = async (index: number) => {
+    const fileItem = uploadedFiles[index];
+    
+    if (fileItem.storagePath) {
+      try {
+        await deleteDocument(fileItem.storagePath);
+        toast({
+          title: "File Deleted",
+          description: "Document has been removed from storage.",
+        });
+      } catch (error) {
+        console.error('Error deleting file:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete file from storage.",
+          variant: "destructive"
+        });
+      }
+    }
+    
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -139,7 +256,7 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
             Upload Government Documents
           </h3>
           <p className="text-gray-600 mb-4">
-            Drop files here or click to browse. Supports PDF, DOC, DOCX files.
+            Drop files here or click to browse. Supports PDF, DOC, DOCX files up to 10MB each.
           </p>
           <Button onClick={() => fileInputRef.current?.click()}>
             Select Files
@@ -170,7 +287,7 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
           <CardContent>
             <Progress value={uploadProgress} className="mb-4" />
             <div className="text-sm text-gray-600">
-              {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : "Analyzing compliance requirements..."}
+              {uploadProgress < 100 ? `Uploading files... ${uploadProgress}%` : "Analyzing compliance requirements and extracting FAR clauses..."}
             </div>
           </CardContent>
         </Card>
@@ -181,18 +298,53 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
         <Card>
           <CardHeader>
             <CardTitle>Uploaded Documents</CardTitle>
-            <CardDescription>{uploadedFiles.length} file(s) ready for analysis</CardDescription>
+            <CardDescription>{uploadedFiles.length} file(s) processed</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {uploadedFiles.map((file, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-md">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                  <div className="flex-1">
-                    <div className="font-medium">{file.name}</div>
-                    <div className="text-sm text-gray-600">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+            <div className="space-y-3">
+              {uploadedFiles.map((fileItem, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <div className="flex-1">
+                      <div className="font-medium">{fileItem.file.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {(fileItem.file.size / 1024 / 1024).toFixed(2)} MB
+                        {fileItem.publicUrl && (
+                          <span className="ml-2 text-green-600">• Stored securely</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div className="flex items-center space-x-2">
+                    {fileItem.status === 'uploaded' && (
+                      <>
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        {fileItem.publicUrl && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(fileItem.publicUrl, '_blank')}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteFile(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    {fileItem.status === 'uploading' && (
+                      <div className="animate-spin h-5 w-5 border-b-2 border-blue-600"></div>
+                    )}
+                    {fileItem.status === 'error' && (
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
