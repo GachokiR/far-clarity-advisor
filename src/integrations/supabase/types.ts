@@ -9,6 +9,121 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_analysis_results: {
+        Row: {
+          ai_findings: Json
+          analysis_type: string
+          confidence_score: number | null
+          created_at: string
+          document_id: string | null
+          id: string
+          model_version: string | null
+          processing_time_ms: number | null
+          recommendations: Json | null
+          risk_assessment: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_findings: Json
+          analysis_type?: string
+          confidence_score?: number | null
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          model_version?: string | null
+          processing_time_ms?: number | null
+          recommendations?: Json | null
+          risk_assessment?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_findings?: Json
+          analysis_type?: string
+          confidence_score?: number | null
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          model_version?: string | null
+          processing_time_ms?: number | null
+          recommendations?: Json | null
+          risk_assessment?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analysis_results_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_recommendations: {
+        Row: {
+          analysis_id: string | null
+          auto_generated: boolean
+          created_at: string
+          description: string
+          due_date: string | null
+          estimated_effort: string | null
+          far_clause_reference: string | null
+          id: string
+          metadata: Json | null
+          priority: string
+          recommendation_type: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_id?: string | null
+          auto_generated?: boolean
+          created_at?: string
+          description: string
+          due_date?: string | null
+          estimated_effort?: string | null
+          far_clause_reference?: string | null
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          recommendation_type: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_id?: string | null
+          auto_generated?: boolean
+          created_at?: string
+          description?: string
+          due_date?: string | null
+          estimated_effort?: string | null
+          far_clause_reference?: string | null
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          recommendation_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_recommendations_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "ai_analysis_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analysis_results: {
         Row: {
           analysis_data: Json
@@ -74,6 +189,101 @@ export type Database = {
           status?: string
           timeframe?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      compliance_gaps: {
+        Row: {
+          analysis_id: string | null
+          created_at: string
+          description: string
+          far_clause: string
+          gap_type: string
+          id: string
+          impact_assessment: string | null
+          regulatory_reference: string | null
+          resolution_status: string
+          severity: string
+          suggested_action: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_id?: string | null
+          created_at?: string
+          description: string
+          far_clause: string
+          gap_type: string
+          id?: string
+          impact_assessment?: string | null
+          regulatory_reference?: string | null
+          resolution_status?: string
+          severity?: string
+          suggested_action?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_id?: string | null
+          created_at?: string
+          description?: string
+          far_clause?: string
+          gap_type?: string
+          id?: string
+          impact_assessment?: string | null
+          regulatory_reference?: string | null
+          resolution_status?: string
+          severity?: string
+          suggested_action?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_gaps_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "ai_analysis_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          public_url: string | null
+          storage_path: string
+          updated_at: string
+          upload_status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          public_url?: string | null
+          storage_path: string
+          updated_at?: string
+          upload_status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          public_url?: string | null
+          storage_path?: string
+          updated_at?: string
+          upload_status?: string
           user_id?: string
         }
         Relationships: []
