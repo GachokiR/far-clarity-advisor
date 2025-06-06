@@ -36,7 +36,7 @@ const Index = () => {
 
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
-    setActiveTab("results");
+    setActiveTab("analysis");
   };
 
   if (loading) {
@@ -139,10 +139,9 @@ const Index = () => {
 
         {/* Main Application Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="upload">Document Upload</TabsTrigger>
             <TabsTrigger value="analysis">FAR Analysis</TabsTrigger>
-            <TabsTrigger value="results">Results</TabsTrigger>
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
@@ -162,31 +161,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="analysis" className="mt-6">
-            <ComplianceAnalysis />
-          </TabsContent>
-
-          <TabsContent value="results" className="mt-6">
-            {analysisResults ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Analysis Results</CardTitle>
-                  <CardDescription>Compliance requirements and risk assessment</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
-                    {JSON.stringify(analysisResults, null, 2)}
-                  </pre>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Analysis Results</h3>
-                  <p className="text-gray-600">Upload a document to see compliance analysis results here.</p>
-                </CardContent>
-              </Card>
-            )}
+            <ComplianceAnalysis analysisResults={analysisResults} />
           </TabsContent>
 
           <TabsContent value="dashboard" className="mt-6">

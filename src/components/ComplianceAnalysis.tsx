@@ -10,7 +10,11 @@ import { getComplianceChecklists, updateComplianceStatus } from "@/services/comp
 import { ComplianceChecklist } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
-export const ComplianceAnalysis = () => {
+interface ComplianceAnalysisProps {
+  analysisResults?: any;
+}
+
+export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [checklists, setChecklists] = useState<ComplianceChecklist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,11 +89,32 @@ export const ComplianceAnalysis = () => {
 
   return (
     <div className="space-y-6">
+      {/* Analysis Results Section */}
+      {analysisResults && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Latest Analysis Results</CardTitle>
+            <CardDescription>Most recent document analysis and compliance requirements</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-blue-50 p-4 rounded-lg mb-4">
+              <h4 className="font-medium text-blue-900 mb-2">Analysis Complete</h4>
+              <p className="text-blue-700 text-sm">
+                Your document has been analyzed and compliance checklists have been generated below.
+              </p>
+            </div>
+            <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-xs">
+              {JSON.stringify(analysisResults, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search */}
       <Card>
         <CardHeader>
           <CardTitle>Compliance Checklists</CardTitle>
-          <CardDescription>Manage your FAR compliance requirements</CardDescription>
+          <CardDescription>Manage your FAR compliance requirements and analysis results</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex space-x-2">
@@ -115,7 +140,7 @@ export const ComplianceAnalysis = () => {
           <CardContent className="p-12 text-center">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Compliance Checklists</h3>
-            <p className="text-gray-600">Upload documents to generate compliance checklists automatically.</p>
+            <p className="text-gray-600">Upload documents to generate compliance checklists and see analysis results here.</p>
           </CardContent>
         </Card>
       ) : (
