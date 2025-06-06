@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { saveAnalysisResult } from "@/services/analysisService";
+import { saveComplianceChecklist } from "@/services/complianceService";
 
 interface FileUploadProps {
   onAnalysisComplete: (results: any) => void;
@@ -47,38 +49,72 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
     setIsAnalyzing(true);
     setUploadProgress(0);
 
-    // Simulate file upload and analysis
-    for (let i = 0; i <= 100; i += 10) {
-      setUploadProgress(i);
-      await new Promise(resolve => setTimeout(resolve, 100));
+    try {
+      // Simulate file upload progress
+      for (let i = 0; i <= 100; i += 10) {
+        setUploadProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // Simulate FAR analysis
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Generate mock analysis results
+      const mockResults = {
+        documentsAnalyzed: files.length,
+        farClausesDetected: [
+          { clause: "FAR 52.219-14", title: "Limitations on Subcontracting", risk: "High", cost: "$5,000", timeframe: "2-3 weeks" },
+          { clause: "FAR 52.204-10", title: "Reporting Executive Compensation", risk: "Medium", cost: "$2,500", timeframe: "1 week" },
+          { clause: "FAR 52.222-50", title: "Combating Trafficking in Persons", risk: "Low", cost: "$1,000", timeframe: "3-5 days" }
+        ],
+        riskAssessment: {
+          highRisk: 1,
+          mediumRisk: 1,
+          lowRisk: 1
+        },
+        estimatedComplianceCost: "$8,500",
+        estimatedTimeframe: "4-6 weeks"
+      };
+
+      // Save analysis result to database
+      const analysisResult = await saveAnalysisResult(
+        files[0].name,
+        mockResults,
+        'medium' // Risk level based on the analysis
+      );
+
+      // Save compliance checklists for each detected FAR clause
+      for (const clause of mockResults.farClausesDetected) {
+        await saveComplianceChecklist(
+          clause.clause,
+          [
+            "Review contract requirements",
+            "Implement compliance procedures",
+            "Train staff on requirements",
+            "Establish monitoring system"
+          ],
+          clause.cost,
+          clause.timeframe
+        );
+      }
+
+      setIsAnalyzing(false);
+      onAnalysisComplete({ ...mockResults, id: analysisResult.id });
+
+      toast({
+        title: "Analysis Complete",
+        description: `Successfully analyzed ${files.length} document(s) and saved ${mockResults.farClausesDetected.length} compliance checklists.`,
+      });
+
+    } catch (error) {
+      setIsAnalyzing(false);
+      console.error('Error saving analysis:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save analysis results. Please try again.",
+        variant: "destructive"
+      });
     }
-
-    // Simulate FAR analysis
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const mockResults = {
-      documentsAnalyzed: files.length,
-      farClausesDetected: [
-        { clause: "FAR 52.219-14", title: "Limitations on Subcontracting", risk: "High", cost: "$5,000", timeframe: "2-3 weeks" },
-        { clause: "FAR 52.204-10", title: "Reporting Executive Compensation", risk: "Medium", cost: "$2,500", timeframe: "1 week" },
-        { clause: "FAR 52.222-50", title: "Combating Trafficking in Persons", risk: "Low", cost: "$1,000", timeframe: "3-5 days" }
-      ],
-      riskAssessment: {
-        highRisk: 1,
-        mediumRisk: 1,
-        lowRisk: 1
-      },
-      estimatedComplianceCost: "$8,500",
-      estimatedTimeframe: "4-6 weeks"
-    };
-
-    setIsAnalyzing(false);
-    onAnalysisComplete(mockResults);
-
-    toast({
-      title: "Analysis Complete",
-      description: `Successfully analyzed ${files.length} document(s) and detected ${mockResults.farClausesDetected.length} FAR clauses.`,
-    });
   };
 
   return (
@@ -88,9 +124,14 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
         className={`border-2 border-dashed transition-colors ${
           isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
         }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          const files = Array.from(e.dataTransfer.files);
+          handleFiles(files);
+        }}
       >
         <CardContent className="p-8 text-center">
           <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -108,7 +149,12 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
             type="file"
             multiple
             accept=".pdf,.doc,.docx"
-            onChange={handleFileSelect}
+            onChange={(e) => {
+              if (e.target.files) {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+              }
+            }}
             className="hidden"
           />
         </CardContent>

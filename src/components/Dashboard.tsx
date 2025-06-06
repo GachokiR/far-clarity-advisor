@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -16,26 +17,75 @@ import {
   Cell
 } from "recharts";
 import { AlertTriangle, CheckCircle, Clock, Download, FileText, TrendingUp } from "lucide-react";
+import { getAnalysisResults } from "@/services/analysisService";
+import { getComplianceChecklists } from "@/services/complianceService";
+import { AnalysisResult, ComplianceChecklist } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 export const Dashboard = () => {
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
+  const [complianceChecklists, setComplianceChecklists] = useState<ComplianceChecklist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [analyses, checklists] = await Promise.all([
+        getAnalysisResults(),
+        getComplianceChecklists()
+      ]);
+      setAnalysisResults(analyses);
+      setComplianceChecklists(checklists);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate compliance statistics
+  const complianceStats = {
+    completed: complianceChecklists.filter(c => c.status === 'completed').length,
+    inProgress: complianceChecklists.filter(c => c.status === 'in_progress').length,
+    pending: complianceChecklists.filter(c => c.status === 'pending').length
+  };
+
   const complianceData = [
-    { name: "Completed", value: 12, color: "#10b981" },
-    { name: "In Progress", value: 5, color: "#f59e0b" },
-    { name: "Pending", value: 3, color: "#ef4444" }
+    { name: "Completed", value: complianceStats.completed, color: "#10b981" },
+    { name: "In Progress", value: complianceStats.inProgress, color: "#f59e0b" },
+    { name: "Pending", value: complianceStats.pending, color: "#ef4444" }
   ];
 
-  const riskData = [
-    { month: "Jan", high: 2, medium: 5, low: 8 },
-    { month: "Feb", high: 1, medium: 7, low: 12 },
-    { month: "Mar", high: 3, medium: 4, low: 10 },
-    { month: "Apr", high: 1, medium: 6, low: 15 }
-  ];
+  // Calculate risk statistics
+  const riskStats = {
+    high: analysisResults.filter(a => a.risk_level === 'high').length,
+    medium: analysisResults.filter(a => a.risk_level === 'medium').length,
+    low: analysisResults.filter(a => a.risk_level === 'low').length
+  };
 
-  const recentAnalyses = [
-    { id: 1, document: "RFP-2024-001.pdf", date: "2024-01-15", status: "Completed", risks: 3 },
-    { id: 2, document: "Contract-Amendment.docx", date: "2024-01-14", status: "In Progress", risks: 2 },
-    { id: 3, document: "Solicitation-456.pdf", date: "2024-01-13", status: "Completed", risks: 5 }
-  ];
+  const complianceRate = complianceChecklists.length > 0 
+    ? Math.round((complianceStats.completed / complianceChecklists.length) * 100)
+    : 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -46,13 +96,12 @@ export const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Analyses</p>
-                <p className="text-2xl font-bold">47</p>
+                <p className="text-2xl font-bold">{analysisResults.length}</p>
               </div>
               <FileText className="h-8 w-8 text-blue-600" />
             </div>
-            <div className="mt-4 flex items-center text-sm text-green-600">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              +12% from last month
+            <div className="mt-4 flex items-center text-sm text-gray-600">
+              <span>Documents analyzed</span>
             </div>
           </CardContent>
         </Card>
@@ -62,7 +111,7 @@ export const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">High Risk Issues</p>
-                <p className="text-2xl font-bold">7</p>
+                <p className="text-2xl font-bold">{riskStats.high}</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
@@ -78,12 +127,12 @@ export const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Compliance Rate</p>
-                <p className="text-2xl font-bold">85%</p>
+                <p className="text-2xl font-bold">{complianceRate}%</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
             <div className="mt-4">
-              <Progress value={85} className="h-2" />
+              <Progress value={complianceRate} className="h-2" />
             </div>
           </CardContent>
         </Card>
@@ -92,14 +141,13 @@ export const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Avg. Processing</p>
-                <p className="text-2xl font-bold">2.4h</p>
+                <p className="text-sm font-medium text-gray-600">Total Checklists</p>
+                <p className="text-2xl font-bold">{complianceChecklists.length}</p>
               </div>
               <Clock className="h-8 w-8 text-purple-600" />
             </div>
-            <div className="mt-4 flex items-center text-sm text-green-600">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              -15% faster
+            <div className="mt-4 flex items-center text-sm text-gray-600">
+              <span>Compliance items</span>
             </div>
           </CardContent>
         </Card>
@@ -109,48 +157,71 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Risk Assessment Trends</CardTitle>
-            <CardDescription>Monthly risk distribution analysis</CardDescription>
+            <CardTitle>Compliance Status Overview</CardTitle>
+            <CardDescription>Current project compliance status</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={riskData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="high" stackId="a" fill="#ef4444" />
-                <Bar dataKey="medium" stackId="a" fill="#f59e0b" />
-                <Bar dataKey="low" stackId="a" fill="#10b981" />
-              </BarChart>
-            </ResponsiveContainer>
+            {complianceChecklists.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={complianceData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
+                  >
+                    {complianceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-500">
+                <div className="text-center">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-4" />
+                  <p>No compliance data yet</p>
+                  <p className="text-sm">Upload documents to see compliance status</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Compliance Status</CardTitle>
-            <CardDescription>Current project compliance overview</CardDescription>
+            <CardTitle>Risk Assessment Summary</CardTitle>
+            <CardDescription>Risk distribution across analyzed documents</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={complianceData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
-                >
-                  {complianceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {analysisResults.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">High Risk</span>
+                  <span className="text-sm text-red-600">{riskStats.high}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Medium Risk</span>
+                  <span className="text-sm text-yellow-600">{riskStats.medium}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Low Risk</span>
+                  <span className="text-sm text-green-600">{riskStats.low}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[260px] text-gray-500">
+                <div className="text-center">
+                  <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+                  <p>No risk assessment data yet</p>
+                  <p className="text-sm">Upload documents to see risk analysis</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -170,30 +241,38 @@ export const Dashboard = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentAnalyses.map((analysis) => (
-              <div key={analysis.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <FileText className="h-8 w-8 text-blue-600" />
-                  <div>
-                    <div className="font-medium">{analysis.document}</div>
-                    <div className="text-sm text-gray-600">Analyzed on {analysis.date}</div>
+          {analysisResults.length > 0 ? (
+            <div className="space-y-4">
+              {analysisResults.slice(0, 5).map((analysis) => (
+                <div key={analysis.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <FileText className="h-8 w-8 text-blue-600" />
+                    <div>
+                      <div className="font-medium">{analysis.document_name}</div>
+                      <div className="text-sm text-gray-600">
+                        Analyzed on {new Date(analysis.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <Badge variant={analysis.risk_level === 'high' ? 'destructive' : 
+                                  analysis.risk_level === 'medium' ? 'default' : 'secondary'}>
+                      {analysis.risk_level} risk
+                    </Badge>
+                    <Button variant="outline" size="sm">
+                      View Details
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <Badge variant={analysis.status === "Completed" ? "default" : "secondary"}>
-                    {analysis.status}
-                  </Badge>
-                  <div className="text-sm text-gray-600">
-                    {analysis.risks} risk{analysis.risks !== 1 ? 's' : ''} found
-                  </div>
-                  <Button variant="outline" size="sm">
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Analyses Yet</h3>
+              <p className="text-gray-600">Upload documents to see analysis results here.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
