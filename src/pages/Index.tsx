@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FileUpload } from "@/components/FileUpload";
 import { ComplianceAnalysis } from "@/components/ComplianceAnalysis";
 import { Dashboard } from "@/components/Dashboard";
-import { UserProfile } from "@/components/UserProfile";
+import { ProfileManagement } from "@/components/UserProfile";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -194,7 +194,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6">
-            <UserProfile />
+            <ProfileManagement />
           </TabsContent>
         </Tabs>
       </main>

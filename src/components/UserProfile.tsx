@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getUserProfile, updateUserProfile, UserProfile } from "@/services/profileService";
+import { getUserProfile, updateUserProfile, type UserProfile } from "@/services/profileService";
 import { useAuth } from "@/hooks/useAuth";
 import { User, Settings } from "lucide-react";
 
-export const UserProfile = () => {
+export const ProfileManagement = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
