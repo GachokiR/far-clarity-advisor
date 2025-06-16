@@ -10,6 +10,8 @@ import { ComplianceGaps } from "./ComplianceGaps";
 import { ComplianceAnalysisHeader } from "./compliance/ComplianceAnalysisHeader";
 import { ComplianceChecklistsTab } from "./compliance/ComplianceChecklistsTab";
 import { ComplianceQuickTools } from "./compliance/ComplianceQuickTools";
+import { SecurityErrorBoundary } from "./SecurityErrorBoundary";
+import { ComplianceAnalysisLoading } from "./SecurityLoadingStates";
 
 interface ComplianceAnalysisProps {
   analysisResults?: any;
@@ -63,9 +65,15 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
     }
   };
 
+  if (loading) {
+    return <ComplianceAnalysisLoading />;
+  }
+
   return (
     <div className="space-y-6">
-      <ComplianceAnalysisHeader analysisResults={analysisResults} />
+      <SecurityErrorBoundary component="ComplianceAnalysisHeader">
+        <ComplianceAnalysisHeader analysisResults={analysisResults} />
+      </SecurityErrorBoundary>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -82,23 +90,31 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
         </TabsList>
 
         <TabsContent value="checklists" className="mt-6">
-          <ComplianceChecklistsTab 
-            checklists={checklists}
-            loading={loading}
-            onStatusUpdate={handleStatusUpdate}
-          />
+          <SecurityErrorBoundary component="ComplianceChecklistsTab">
+            <ComplianceChecklistsTab 
+              checklists={checklists}
+              loading={loading}
+              onStatusUpdate={handleStatusUpdate}
+            />
+          </SecurityErrorBoundary>
         </TabsContent>
 
         <TabsContent value="recommendations" className="mt-6">
-          <AIRecommendations />
+          <SecurityErrorBoundary component="AIRecommendations">
+            <AIRecommendations />
+          </SecurityErrorBoundary>
         </TabsContent>
 
         <TabsContent value="gaps" className="mt-6">
-          <ComplianceGaps />
+          <SecurityErrorBoundary component="ComplianceGaps">
+            <ComplianceGaps />
+          </SecurityErrorBoundary>
         </TabsContent>
 
         <TabsContent value="tools" className="mt-6">
-          <ComplianceQuickTools />
+          <SecurityErrorBoundary component="ComplianceQuickTools">
+            <ComplianceQuickTools />
+          </SecurityErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>

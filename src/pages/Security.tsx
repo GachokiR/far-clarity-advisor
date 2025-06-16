@@ -4,7 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SecurityMonitoring } from '@/components/SecurityMonitoring';
 import { SecurityDashboard } from '@/components/SecurityDashboard';
 import { ComplianceManager } from '@/components/ComplianceManager';
-import { Shield, Activity, FileText, Brain } from 'lucide-react';
+import { SecurityTestingDashboard } from '@/components/SecurityTestingDashboard';
+import { SecurityErrorBoundary } from '@/components/SecurityErrorBoundary';
+import { Shield, Activity, FileText, Brain, TestTube } from 'lucide-react';
 
 const Security = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -17,12 +19,12 @@ const Security = () => {
             Enterprise Security Center
           </h1>
           <p className="text-gray-600">
-            Advanced security monitoring, threat detection, and compliance management
+            Advanced security monitoring, threat detection, compliance management, and testing
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <Brain className="h-4 w-4" />
               <span>Security Dashboard</span>
@@ -35,6 +37,10 @@ const Security = () => {
               <FileText className="h-4 w-4" />
               <span>Compliance</span>
             </TabsTrigger>
+            <TabsTrigger value="testing" className="flex items-center space-x-2">
+              <TestTube className="h-4 w-4" />
+              <span>Security Testing</span>
+            </TabsTrigger>
             <TabsTrigger value="advanced" className="flex items-center space-x-2">
               <Shield className="h-4 w-4" />
               <span>Advanced Features</span>
@@ -42,15 +48,27 @@ const Security = () => {
           </TabsList>
 
           <TabsContent value="dashboard">
-            <SecurityDashboard />
+            <SecurityErrorBoundary component="SecurityDashboard">
+              <SecurityDashboard />
+            </SecurityErrorBoundary>
           </TabsContent>
 
           <TabsContent value="monitoring">
-            <SecurityMonitoring />
+            <SecurityErrorBoundary component="SecurityMonitoring">
+              <SecurityMonitoring />
+            </SecurityErrorBoundary>
           </TabsContent>
 
           <TabsContent value="compliance">
-            <ComplianceManager />
+            <SecurityErrorBoundary component="ComplianceManager">
+              <ComplianceManager />
+            </SecurityErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="testing">
+            <SecurityErrorBoundary component="SecurityTestingDashboard">
+              <SecurityTestingDashboard />
+            </SecurityErrorBoundary>
           </TabsContent>
 
           <TabsContent value="advanced">
@@ -117,6 +135,30 @@ const Security = () => {
                   <li>• HIPAA safeguards</li>
                   <li>• Automated reporting</li>
                 </ul>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm border col-span-2">
+                <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+                  <TestTube className="h-5 w-5 text-indigo-600" />
+                  <span>Comprehensive Security Testing</span>
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Automated security testing suite validates all security features and identifies vulnerabilities.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>• Encryption performance testing</li>
+                    <li>• File upload security validation</li>
+                    <li>• RBAC functionality testing</li>
+                    <li>• AI security analysis testing</li>
+                  </ul>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>• Browser compatibility checks</li>
+                    <li>• Performance benchmarking</li>
+                    <li>• Error handling validation</li>
+                    <li>• Production readiness assessment</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </TabsContent>
