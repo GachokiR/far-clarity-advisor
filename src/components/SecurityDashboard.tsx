@@ -11,8 +11,8 @@ import { SecurityAlertsTab } from './security/SecurityAlertsTab';
 import { BehavioralAnalyticsTab } from './security/BehavioralAnalyticsTab';
 import { ComplianceReportTab } from './security/ComplianceReportTab';
 import { ThreatDetectionTab } from './security/ThreatDetectionTab';
-import { Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { LayoutDashboard, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const SecurityDashboard = () => {
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
@@ -21,6 +21,7 @@ export const SecurityDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadDashboardData();
@@ -71,10 +72,18 @@ export const SecurityDashboard = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
             <Button variant="outline" asChild>
               <Link to="/" className="flex items-center space-x-1">
-                <Home className="h-4 w-4" />
-                <span>Home</span>
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Dashboard</span>
               </Link>
             </Button>
             <Button onClick={() => setRefreshKey(prev => prev + 1)} variant="outline">

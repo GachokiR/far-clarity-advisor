@@ -1,5 +1,5 @@
 
-import { ChevronRight, Home, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft, LayoutDashboard, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,20 +14,37 @@ import {
 interface BreadcrumbItem {
   label: string;
   href?: string;
+  onClick?: () => void;
 }
 
 interface BreadcrumbNavigationProps {
   items: BreadcrumbItem[];
   showBackButton?: boolean;
   showHomeButton?: boolean;
+  showDashboardButton?: boolean;
+  showSecurityButton?: boolean;
+  onTabChange?: (tab: string) => void;
+  currentPath?: string;
 }
 
 export const BreadcrumbNavigation = ({ 
   items, 
   showBackButton = true, 
-  showHomeButton = true 
+  showHomeButton = true,
+  showDashboardButton = false,
+  showSecurityButton = false,
+  onTabChange,
+  currentPath = "/"
 }: BreadcrumbNavigationProps) => {
   const navigate = useNavigate();
+
+  const handleBreadcrumbClick = (item: BreadcrumbItem) => {
+    if (item.onClick) {
+      item.onClick();
+    } else if (item.href) {
+      navigate(item.href);
+    }
+  };
 
   return (
     <div className="flex items-center space-x-4 mb-6">
@@ -41,6 +58,32 @@ export const BreadcrumbNavigation = ({
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
+          </Button>
+        )}
+        
+        {showDashboardButton && (
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+          >
+            <Link to="/" className="flex items-center space-x-1">
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
+            </Link>
+          </Button>
+        )}
+
+        {showSecurityButton && currentPath !== '/security' && (
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+          >
+            <Link to="/security" className="flex items-center space-x-1">
+              <Shield className="h-4 w-4" />
+              <span>Security</span>
+            </Link>
           </Button>
         )}
         
@@ -74,9 +117,12 @@ export const BreadcrumbNavigation = ({
                 <ChevronRight className="h-4 w-4" />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
-                {item.href && index < items.length - 1 ? (
-                  <BreadcrumbLink asChild>
-                    <Link to={item.href}>{item.label}</Link>
+                {(item.href || item.onClick) && index < items.length - 1 ? (
+                  <BreadcrumbLink 
+                    className="cursor-pointer hover:text-foreground"
+                    onClick={() => handleBreadcrumbClick(item)}
+                  >
+                    {item.label}
                   </BreadcrumbLink>
                 ) : (
                   <BreadcrumbPage>{item.label}</BreadcrumbPage>

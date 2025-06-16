@@ -12,13 +12,14 @@ import {
   Download,
   Clock,
   TrendingUp,
-  FileText
+  FileText,
+  LayoutDashboard,
+  ArrowLeft
 } from 'lucide-react';
 import { securityTestingService, SecurityTestSuite, SecurityTestResult } from '@/services/securityTestingService';
 import { useToast } from '@/hooks/use-toast';
 import { pdfReportService } from '@/utils/pdfReportService';
-import { Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const SecurityTestingDashboard = () => {
   const [testSuites, setTestSuites] = useState<SecurityTestSuite[]>([]);
@@ -26,6 +27,7 @@ export const SecurityTestingDashboard = () => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [lastRunTime, setLastRunTime] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Load existing test results
@@ -146,10 +148,18 @@ export const SecurityTestingDashboard = () => {
           </p>
         </div>
         <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(-1)}
+            className="flex items-center space-x-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/" className="flex items-center space-x-1">
-              <Home className="h-4 w-4" />
-              <span>Home</span>
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
             </Link>
           </Button>
           <Button 

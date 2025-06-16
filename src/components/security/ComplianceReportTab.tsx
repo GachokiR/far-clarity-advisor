@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, Home } from 'lucide-react';
+import { Download, FileText, LayoutDashboard, ArrowLeft } from 'lucide-react';
 import { pdfReportService } from '@/utils/pdfReportService';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ComplianceReportTabProps {
   complianceReport: any;
@@ -14,6 +13,7 @@ interface ComplianceReportTabProps {
 export const ComplianceReportTab = ({ complianceReport }: ComplianceReportTabProps) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const downloadJSONReport = () => {
     if (!complianceReport) return;
@@ -66,12 +66,23 @@ export const ComplianceReportTab = ({ complianceReport }: ComplianceReportTabPro
             <CardTitle>Compliance Report</CardTitle>
             <CardDescription>Current compliance status and recommendations</CardDescription>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/" className="flex items-center space-x-1">
-              <Home className="h-4 w-4" />
-              <span>Home</span>
-            </Link>
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/" className="flex items-center space-x-1">
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
