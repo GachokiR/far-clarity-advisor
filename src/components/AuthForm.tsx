@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { validateEmail, validatePassword } from "@/utils/inputValidation";
 import { authRateLimiter } from "@/utils/rateLimiting";
 import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
+import { logAuthAttempt } from "@/utils/securityLogger";
+import { sanitizeError } from "@/utils/errorSanitizer";
+import { logger } from "@/utils/productionLogger";
 
 interface AuthFormProps {
   isLogin: boolean;
@@ -60,12 +63,16 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
     try {
       if (isLogin) {
         await signIn(emailValidation.sanitizedValue, password);
+        logAuthAttempt(emailValidation.sanitizedValue, true);
+        logger.info('User signed in successfully', { email: emailValidation.sanitizedValue }, 'AuthForm');
         toast({
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
       } else {
         await signUp(emailValidation.sanitizedValue, password);
+        logAuthAttempt(emailValidation.sanitizedValue, true);
+        logger.info('User signed up successfully', { email: emailValidation.sanitizedValue }, 'AuthForm');
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account.",
@@ -73,14 +80,11 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
       }
       navigate("/");
     } catch (err: any) {
-      // Don't expose detailed error messages
-      if (err.message.includes('Invalid login credentials')) {
-        setError('Invalid email or password');
-      } else if (err.message.includes('User already registered')) {
-        setError('An account with this email already exists');
-      } else {
-        setError('Authentication failed. Please try again.');
-      }
+      logAuthAttempt(emailValidation.sanitizedValue, false, { error: err.message });
+      logger.error('Authentication failed', { email: emailValidation.sanitizedValue, error: err.message }, 'AuthForm');
+      
+      const sanitizedError = sanitizeError(err);
+      setError(sanitizedError.message);
     } finally {
       setLoading(false);
     }
