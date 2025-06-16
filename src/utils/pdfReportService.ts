@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { SecurityTestSuite } from '@/services/securityTestingService';
 
@@ -133,7 +133,7 @@ export class PDFReportService {
       }
 
       const status = test.passed ? '✓' : '✗';
-      const statusColor = test.passed ? [0, 128, 0] : [255, 0, 0];
+      const statusColor = test.passed ? [0, 128, 0] as [number, number, number] : [255, 0, 0] as [number, number, number];
       
       this.doc.setTextColor(...statusColor);
       this.doc.text(status, 25, yPosition);
