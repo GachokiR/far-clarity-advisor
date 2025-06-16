@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { validateEmail, validatePassword } from "@/utils/inputValidation";
 import { authRateLimiter } from "@/utils/rateLimiting";
+import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,37 +18,10 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [passwordValidation, setPasswordValidation] = useState<{
-    length: boolean;
-    uppercase: boolean;
-    lowercase: boolean;
-    number: boolean;
-    special: boolean;
-  }>({
-    length: false,
-    uppercase: false,
-    lowercase: false,
-    number: false,
-    special: false
-  });
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handlePasswordChange = (value: string) => {
-    setPassword(value);
-    
-    if (!isLogin) {
-      setPasswordValidation({
-        length: value.length >= 8,
-        uppercase: /[A-Z]/.test(value),
-        lowercase: /[a-z]/.test(value),
-        number: /\d/.test(value),
-        special: /[!@#$%^&*(),.?":{}|<>]/.test(value)
-      });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,13 +84,6 @@ const Auth = () => {
     }
   };
 
-  const PasswordRequirement = ({ met, text }: { met: boolean; text: string }) => (
-    <div className={`flex items-center space-x-2 text-sm ${met ? 'text-green-600' : 'text-gray-500'}`}>
-      {met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-      <span>{text}</span>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -155,22 +122,13 @@ const Auth = () => {
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={isLogin ? 1 : 8}
                 autoComplete={isLogin ? "current-password" : "new-password"}
               />
               
-              {!isLogin && password && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-md space-y-1">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
-                  <PasswordRequirement met={passwordValidation.length} text="At least 8 characters" />
-                  <PasswordRequirement met={passwordValidation.uppercase} text="One uppercase letter" />
-                  <PasswordRequirement met={passwordValidation.lowercase} text="One lowercase letter" />
-                  <PasswordRequirement met={passwordValidation.number} text="One number" />
-                  <PasswordRequirement met={passwordValidation.special} text="One special character" />
-                </div>
-              )}
+              {!isLogin && <PasswordStrengthIndicator password={password} showRequirements />}
             </div>
             
             {error && (
