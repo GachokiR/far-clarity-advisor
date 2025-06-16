@@ -13,7 +13,8 @@ import {
   Eye,
   XCircle
 } from "lucide-react";
-import { getComplianceGaps, updateComplianceGapStatus, ComplianceGap } from "@/services/aiAnalysisService";
+import { getComplianceGaps, updateComplianceGapStatus } from "@/services/aiAnalysisService";
+import { ComplianceGap } from "@/types/aiAnalysis";
 import { useToast } from "@/hooks/use-toast";
 
 interface ComplianceGapsProps {

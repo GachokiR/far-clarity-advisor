@@ -14,7 +14,8 @@ import {
   TrendingUp,
   FileText
 } from "lucide-react";
-import { getAIRecommendations, updateRecommendationStatus, AIRecommendation } from "@/services/aiAnalysisService";
+import { getAIRecommendations, updateRecommendationStatus } from "@/services/aiAnalysisService";
+import { AIRecommendation } from "@/types/aiAnalysis";
 import { useToast } from "@/hooks/use-toast";
 
 interface AIRecommendationsProps {
