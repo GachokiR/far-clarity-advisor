@@ -1,85 +1,65 @@
 
-import { logger } from '@/utils/productionLogger';
-import { securityLogger } from '@/utils/securityLogger';
+import { SecurityAlert, AlertType, AlertSeverity, AlertStatus } from './alerts/alertTypes';
+import { alertStorage } from './alerts/alertStorage';
+import { alertLogger } from './alerts/alertLogger';
+import { alertFilters } from './alerts/alertFilters';
+import { alertFactory } from './alerts/alertFactory';
 
-export interface SecurityAlert {
-  id: string;
-  type: 'threat_detected' | 'behavioral_anomaly' | 'policy_violation' | 'data_breach';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  userId?: string;
-  metadata: Record<string, any>;
-  timestamp: string;
-  status: 'open' | 'investigating' | 'resolved' | 'false_positive';
-}
+// Re-export types for backward compatibility
+export type { SecurityAlert, AlertType, AlertSeverity, AlertStatus };
 
 class SecurityAlertsService {
-  private securityAlerts: SecurityAlert[] = [];
-
   createSecurityAlert(
-    type: SecurityAlert['type'],
-    severity: SecurityAlert['severity'],
+    type: AlertType,
+    severity: AlertSeverity,
     description: string,
     userId?: string,
     metadata: Record<string, any> = {}
   ): SecurityAlert {
-    const alert: SecurityAlert = {
-      id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type,
-      severity,
-      description,
-      userId,
-      metadata,
-      timestamp: new Date().toISOString(),
-      status: 'open'
-    };
-
-    this.securityAlerts.push(alert);
-
-    // Log to security system
-    securityLogger.logEvent({
-      type: 'suspicious_activity',
-      userId,
-      details: {
-        alertId: alert.id,
-        alertType: type,
-        description,
-        metadata
-      },
-      severity: severity === 'critical' ? 'critical' : severity === 'high' ? 'high' : 'medium'
-    });
-
-    logger.warn('Security alert created', alert, 'SecurityAlertsService');
+    const alert = alertFactory.createAlert(type, severity, description, userId, metadata);
+    
+    alertStorage.addAlert(alert);
+    alertLogger.logAlertCreation(alert);
 
     return alert;
   }
 
-  getSecurityAlerts(status?: SecurityAlert['status']): SecurityAlert[] {
+  getSecurityAlerts(status?: AlertStatus): SecurityAlert[] {
+    const allAlerts = alertStorage.getAllAlerts();
+    
     if (status) {
-      return this.securityAlerts.filter(alert => alert.status === status);
+      return alertFilters.filterByStatus(allAlerts, status);
     }
-    return [...this.securityAlerts];
+    
+    return allAlerts;
   }
 
-  updateAlertStatus(alertId: string, status: SecurityAlert['status']): void {
-    const alertIndex = this.securityAlerts.findIndex(alert => alert.id === alertId);
-    if (alertIndex !== -1) {
-      this.securityAlerts[alertIndex].status = status;
-      logger.info('Security alert status updated', { alertId, status }, 'SecurityAlertsService');
-    }
+  updateAlertStatus(alertId: string, status: AlertStatus): void {
+    alertStorage.updateAlertStatus(alertId, status);
   }
 
   clearSecurityAlerts(): void {
-    this.securityAlerts = [];
-    logger.info('Security alerts cleared', {}, 'SecurityAlertsService');
+    alertStorage.clearAllAlerts();
   }
 
-  getAlertsByType(type: SecurityAlert['type']): SecurityAlert[] {
-    return this.securityAlerts.filter(alert => alert.type === type);
+  getAlertsByType(type: AlertType): SecurityAlert[] {
+    const allAlerts = alertStorage.getAllAlerts();
+    return alertFilters.filterByType(allAlerts, type);
   }
 
-  getAlertsBySeverity(severity: SecurityAlert['severity']): SecurityAlert[] {
-    return this.securityAlerts.filter(alert => alert.severity === severity);
+  getAlertsBySeverity(severity: AlertSeverity): SecurityAlert[] {
+    const allAlerts = alertStorage.getAllAlerts();
+    return alertFilters.filterBySeverity(allAlerts, severity);
+  }
+
+  getAlertsByUserId(userId: string): SecurityAlert[] {
+    const allAlerts = alertStorage.getAllAlerts();
+    return alertFilters.filterByUserId(allAlerts, userId);
+  }
+
+  getAlertsByTimeRange(startTime: string, endTime: string): SecurityAlert[] {
+    const allAlerts = alertStorage.getAllAlerts();
+    return alertFilters.filterByTimeRange(allAlerts, startTime, endTime);
   }
 }
 
