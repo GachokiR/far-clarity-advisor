@@ -6,14 +6,33 @@ import { SecurityDashboard } from '@/components/SecurityDashboard';
 import { ComplianceManager } from '@/components/ComplianceManager';
 import { SecurityTestingDashboard } from '@/components/SecurityTestingDashboard';
 import { SecurityErrorBoundary } from '@/components/SecurityErrorBoundary';
+import { BreadcrumbNavigation } from '@/components/ui/breadcrumb-navigation';
 import { Shield, Activity, FileText, Brain, TestTube } from 'lucide-react';
 
 const Security = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
+  const getTabLabel = (tabValue: string) => {
+    switch (tabValue) {
+      case 'dashboard': return 'Security Dashboard';
+      case 'monitoring': return 'Event Monitoring';
+      case 'compliance': return 'Compliance';
+      case 'testing': return 'Security Testing';
+      case 'advanced': return 'Advanced Features';
+      default: return 'Security Center';
+    }
+  };
+
+  const breadcrumbItems = [
+    { label: 'Security Center', href: '/security' },
+    { label: getTabLabel(activeTab) }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4">
       <div className="max-w-7xl mx-auto">
+        <BreadcrumbNavigation items={breadcrumbItems} />
+        
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Enterprise Security Center

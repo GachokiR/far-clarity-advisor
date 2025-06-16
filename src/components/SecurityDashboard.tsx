@@ -11,6 +11,8 @@ import { SecurityAlertsTab } from './security/SecurityAlertsTab';
 import { BehavioralAnalyticsTab } from './security/BehavioralAnalyticsTab';
 import { ComplianceReportTab } from './security/ComplianceReportTab';
 import { ThreatDetectionTab } from './security/ThreatDetectionTab';
+import { Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const SecurityDashboard = () => {
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
@@ -68,9 +70,17 @@ export const SecurityDashboard = () => {
               Advanced security monitoring and threat detection
             </p>
           </div>
-          <Button onClick={() => setRefreshKey(prev => prev + 1)} variant="outline">
-            Refresh Data
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" asChild>
+              <Link to="/" className="flex items-center space-x-1">
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+            </Button>
+            <Button onClick={() => setRefreshKey(prev => prev + 1)} variant="outline">
+              Refresh Data
+            </Button>
+          </div>
         </div>
 
         <SecurityMetricsCards 

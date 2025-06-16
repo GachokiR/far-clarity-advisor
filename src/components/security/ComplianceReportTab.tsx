@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, Home } from 'lucide-react';
 import { pdfReportService } from '@/utils/pdfReportService';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 interface ComplianceReportTabProps {
   complianceReport: any;
@@ -60,8 +61,18 @@ export const ComplianceReportTab = ({ complianceReport }: ComplianceReportTabPro
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Compliance Report</CardTitle>
-        <CardDescription>Current compliance status and recommendations</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Compliance Report</CardTitle>
+            <CardDescription>Current compliance status and recommendations</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/" className="flex items-center space-x-1">
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {complianceReport && (

@@ -17,6 +17,8 @@ import {
 import { securityTestingService, SecurityTestSuite, SecurityTestResult } from '@/services/securityTestingService';
 import { useToast } from '@/hooks/use-toast';
 import { pdfReportService } from '@/utils/pdfReportService';
+import { Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const SecurityTestingDashboard = () => {
   const [testSuites, setTestSuites] = useState<SecurityTestSuite[]>([]);
@@ -143,7 +145,13 @@ export const SecurityTestingDashboard = () => {
             Comprehensive security testing and validation suite
           </p>
         </div>
-        <div className="space-x-2">
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" asChild>
+            <Link to="/" className="flex items-center space-x-1">
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Link>
+          </Button>
           <Button 
             onClick={runSecurityTests} 
             disabled={isRunning}
