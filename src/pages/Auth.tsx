@@ -5,9 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, AlertCircle } from "lucide-react";
+import { Shield, AlertCircle, Check, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { validateEmail, validatePassword } from "@/utils/inputValidation";
+import { authRateLimiter } from "@/utils/rateLimiting";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,25 +17,79 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [passwordValidation, setPasswordValidation] = useState<{
+    length: boolean;
+    uppercase: boolean;
+    lowercase: boolean;
+    number: boolean;
+    special: boolean;
+  }>({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    
+    if (!isLogin) {
+      setPasswordValidation({
+        length: value.length >= 8,
+        uppercase: /[A-Z]/.test(value),
+        lowercase: /[a-z]/.test(value),
+        number: /\d/.test(value),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(value)
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
+    // Rate limiting check
+    const rateLimitKey = `auth_${email}`;
+    if (!authRateLimiter.isAllowed(rateLimitKey)) {
+      const resetTime = authRateLimiter.getResetTime(rateLimitKey);
+      const resetDate = new Date(resetTime).toLocaleTimeString();
+      setError(`Too many attempts. Try again after ${resetDate}`);
+      setLoading(false);
+      return;
+    }
+
+    // Validate inputs
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.errors.join(', '));
+      setLoading(false);
+      return;
+    }
+
+    if (!isLogin) {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        setError(passwordValidation.errors.join(', '));
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       if (isLogin) {
-        await signIn(email, password);
+        await signIn(emailValidation.sanitizedValue, password);
         toast({
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
       } else {
-        await signUp(email, password);
+        await signUp(emailValidation.sanitizedValue, password);
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account.",
@@ -41,11 +97,25 @@ const Auth = () => {
       }
       navigate("/");
     } catch (err: any) {
-      setError(err.message || "An error occurred");
+      // Don't expose detailed error messages
+      if (err.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password');
+      } else if (err.message.includes('User already registered')) {
+        setError('An account with this email already exists');
+      } else {
+        setError('Authentication failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const PasswordRequirement = ({ met, text }: { met: boolean; text: string }) => (
+    <div className={`flex items-center space-x-2 text-sm ${met ? 'text-green-600' : 'text-gray-500'}`}>
+      {met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      <span>{text}</span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -75,6 +145,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
               />
             </div>
             <div className="space-y-2">
@@ -84,10 +155,22 @@ const Auth = () => {
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 required
-                minLength={6}
+                minLength={isLogin ? 1 : 8}
+                autoComplete={isLogin ? "current-password" : "new-password"}
               />
+              
+              {!isLogin && password && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-md space-y-1">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
+                  <PasswordRequirement met={passwordValidation.length} text="At least 8 characters" />
+                  <PasswordRequirement met={passwordValidation.uppercase} text="One uppercase letter" />
+                  <PasswordRequirement met={passwordValidation.lowercase} text="One lowercase letter" />
+                  <PasswordRequirement met={passwordValidation.number} text="One number" />
+                  <PasswordRequirement met={passwordValidation.special} text="One special character" />
+                </div>
+              )}
             </div>
             
             {error && (
