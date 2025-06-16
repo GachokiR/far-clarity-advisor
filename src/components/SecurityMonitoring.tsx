@@ -60,12 +60,12 @@ export const SecurityMonitoring = () => {
   const eventsByType = securityEvents.reduce((acc, event) => {
     acc[event.type] = (acc[event.type] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<SecurityEvent['type'], number>);
 
   const eventsBySeverity = securityEvents.reduce((acc, event) => {
     acc[event.severity] = (acc[event.severity] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<SecurityEvent['severity'], number>);
 
   return (
     <div className="space-y-6">
@@ -195,7 +195,7 @@ export const SecurityMonitoring = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {Object.entries(eventsByType).map(([type, count]) => (
+                  {(Object.entries(eventsByType) as [SecurityEvent['type'], number][]).map(([type, count]) => (
                     <div key={type} className="flex justify-between">
                       <span className="text-sm">{formatEventType(type)}</span>
                       <span className="font-medium">{count}</span>
@@ -211,7 +211,7 @@ export const SecurityMonitoring = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {Object.entries(eventsBySeverity).map(([severity, count]) => (
+                  {(Object.entries(eventsBySeverity) as [SecurityEvent['severity'], number][]).map(([severity, count]) => (
                     <div key={severity} className="flex justify-between">
                       <span className="text-sm capitalize">{severity}</span>
                       <span className="font-medium">{count}</span>
