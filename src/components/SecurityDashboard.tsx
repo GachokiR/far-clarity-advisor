@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,10 +10,14 @@ import { SecurityAlertsTab } from './security/SecurityAlertsTab';
 import { BehavioralAnalyticsTab } from './security/BehavioralAnalyticsTab';
 import { ComplianceReportTab } from './security/ComplianceReportTab';
 import { ThreatDetectionTab } from './security/ThreatDetectionTab';
-import { LayoutDashboard, ArrowLeft } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export const SecurityDashboard = () => {
+interface SecurityDashboardProps {
+  onTabChange?: (tab: string) => void;
+}
+
+export const SecurityDashboard = ({ onTabChange }: SecurityDashboardProps) => {
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
   const [behavioralPatterns, setBehavioralPatterns] = useState<BehavioralPattern[]>([]);
   const [complianceReport, setComplianceReport] = useState<any>(null);
@@ -74,17 +77,11 @@ export const SecurityDashboard = () => {
           <div className="flex items-center space-x-2">
             <Button 
               variant="outline" 
-              onClick={() => navigate(-1)}
+              onClick={() => onTabChange ? onTabChange('monitoring') : navigate('/security')}
               className="flex items-center space-x-1"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>Back</span>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/" className="flex items-center space-x-1">
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Dashboard</span>
-              </Link>
+              <span>Back to Security</span>
             </Button>
             <Button onClick={() => setRefreshKey(prev => prev + 1)} variant="outline">
               Refresh Data

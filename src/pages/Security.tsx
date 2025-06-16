@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SecurityMonitoring } from '@/components/SecurityMonitoring';
@@ -43,6 +42,8 @@ const Security = () => {
           showDashboardButton={true}
           onTabChange={handleTabNavigation}
           currentPath="/security"
+          securityContext={true}
+          showHomeButton={false}
         />
         
         <div className="mb-8">
@@ -80,7 +81,7 @@ const Security = () => {
 
           <TabsContent value="dashboard">
             <SecurityErrorBoundary component="SecurityDashboard">
-              <SecurityDashboard />
+              <SecurityDashboard onTabChange={handleTabNavigation} />
             </SecurityErrorBoundary>
           </TabsContent>
 
@@ -98,7 +99,7 @@ const Security = () => {
 
           <TabsContent value="testing">
             <SecurityErrorBoundary component="SecurityTestingDashboard">
-              <SecurityTestingDashboard />
+              <SecurityTestingDashboard onTabChange={handleTabNavigation} />
             </SecurityErrorBoundary>
           </TabsContent>
 

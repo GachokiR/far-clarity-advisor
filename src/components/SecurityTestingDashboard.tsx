@@ -19,9 +19,13 @@ import {
 import { securityTestingService, SecurityTestSuite, SecurityTestResult } from '@/services/securityTestingService';
 import { useToast } from '@/hooks/use-toast';
 import { pdfReportService } from '@/utils/pdfReportService';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
-export const SecurityTestingDashboard = () => {
+interface SecurityTestingDashboardProps {
+  onTabChange?: (tab: string) => void;
+}
+
+export const SecurityTestingDashboard = ({ onTabChange }: SecurityTestingDashboardProps) => {
   const [testSuites, setTestSuites] = useState<SecurityTestSuite[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -150,11 +154,11 @@ export const SecurityTestingDashboard = () => {
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 
-            onClick={() => navigate(-1)}
+            onClick={() => onTabChange ? onTabChange('dashboard') : navigate('/security')}
             className="flex items-center space-x-1"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back</span>
+            <span>Back to Security</span>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/" className="flex items-center space-x-1">

@@ -1,6 +1,5 @@
-
 import { ChevronRight, Home, ArrowLeft, LayoutDashboard, Shield } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Breadcrumb,
@@ -25,6 +24,7 @@ interface BreadcrumbNavigationProps {
   showSecurityButton?: boolean;
   onTabChange?: (tab: string) => void;
   currentPath?: string;
+  securityContext?: boolean;
 }
 
 export const BreadcrumbNavigation = ({ 
@@ -34,15 +34,27 @@ export const BreadcrumbNavigation = ({
   showDashboardButton = false,
   showSecurityButton = false,
   onTabChange,
-  currentPath = "/"
+  currentPath = "/",
+  securityContext = false
 }: BreadcrumbNavigationProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleBreadcrumbClick = (item: BreadcrumbItem) => {
     if (item.onClick) {
       item.onClick();
     } else if (item.href) {
       navigate(item.href);
+    }
+  };
+
+  const handleDashboardClick = () => {
+    if (securityContext && onTabChange) {
+      // If we're in security context, go to security dashboard tab
+      onTabChange('dashboard');
+    } else {
+      // Otherwise go to main dashboard
+      navigate('/');
     }
   };
 
@@ -65,12 +77,11 @@ export const BreadcrumbNavigation = ({
           <Button
             variant="outline"
             size="sm"
-            asChild
+            onClick={handleDashboardClick}
+            className="flex items-center space-x-1"
           >
-            <Link to="/" className="flex items-center space-x-1">
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
+            <LayoutDashboard className="h-4 w-4" />
+            <span>{securityContext ? 'Security Dashboard' : 'Dashboard'}</span>
           </Button>
         )}
 
@@ -87,7 +98,7 @@ export const BreadcrumbNavigation = ({
           </Button>
         )}
         
-        {showHomeButton && (
+        {showHomeButton && !securityContext && (
           <Button
             variant="outline"
             size="sm"
@@ -96,6 +107,19 @@ export const BreadcrumbNavigation = ({
             <Link to="/" className="flex items-center space-x-1">
               <Home className="h-4 w-4" />
               <span>Home</span>
+            </Link>
+          </Button>
+        )}
+
+        {securityContext && location.pathname === '/security' && (
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+          >
+            <Link to="/" className="flex items-center space-x-1">
+              <Home className="h-4 w-4" />
+              <span>Main Dashboard</span>
             </Link>
           </Button>
         )}

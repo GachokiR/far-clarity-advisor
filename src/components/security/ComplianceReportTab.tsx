@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, LayoutDashboard, ArrowLeft } from 'lucide-react';
+import { Download, FileText, ArrowLeft } from 'lucide-react';
 import { pdfReportService } from '@/utils/pdfReportService';
 import { useToast } from '@/hooks/use-toast';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface ComplianceReportTabProps {
   complianceReport: any;
+  onTabChange?: (tab: string) => void;
 }
 
-export const ComplianceReportTab = ({ complianceReport }: ComplianceReportTabProps) => {
+export const ComplianceReportTab = ({ complianceReport, onTabChange }: ComplianceReportTabProps) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -70,17 +71,11 @@ export const ComplianceReportTab = ({ complianceReport }: ComplianceReportTabPro
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => navigate(-1)}
+              onClick={() => onTabChange ? onTabChange('dashboard') : navigate('/security')}
               className="flex items-center space-x-1"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>Back</span>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/" className="flex items-center space-x-1">
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Dashboard</span>
-              </Link>
+              <span>Back to Security</span>
             </Button>
           </div>
         </div>
