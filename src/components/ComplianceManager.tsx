@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import {
   Activity
 } from 'lucide-react';
 import { aiSecurityService } from '@/services/aiSecurityService';
+import { pdfReportService } from '@/utils/pdfReportService';
 import { useToast } from '@/hooks/use-toast';
 
 interface ComplianceFramework {
@@ -42,6 +42,7 @@ export const ComplianceManager = () => {
   const [frameworks, setFrameworks] = useState<ComplianceFramework[]>([]);
   const [selectedFramework, setSelectedFramework] = useState<string>('gdpr');
   const [loading, setLoading] = useState(true);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -213,21 +214,42 @@ export const ComplianceManager = () => {
     }
   };
 
-  const generateComplianceReport = async (frameworkId: string) => {
+  const generateComplianceReport = async (frameworkId: string, format: 'json' | 'pdf' = 'json') => {
     try {
       const report = await aiSecurityService.generateComplianceReport(frameworkId as any);
-      toast({
-        title: "Report Generated",
-        description: `Compliance report for ${frameworkId.toUpperCase()} has been generated.`,
-      });
-      // In a real app, this would trigger a download
-      console.log('Generated report:', report);
+      
+      if (format === 'pdf') {
+        setIsGeneratingPDF(true);
+        await pdfReportService.generateComplianceReport(report);
+        toast({
+          title: "PDF Generated",
+          description: `Compliance report PDF for ${frameworkId.toUpperCase()} has been downloaded.`,
+        });
+      } else {
+        // JSON download
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `compliance-report-${frameworkId}-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Report Generated",
+          description: `Compliance report JSON for ${frameworkId.toUpperCase()} has been downloaded.`,
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to generate compliance report.",
         variant: "destructive"
       });
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -253,10 +275,28 @@ export const ComplianceManager = () => {
             Monitor and manage regulatory compliance
           </p>
         </div>
-        <Button onClick={() => generateComplianceReport(selectedFramework)}>
-          <Download className="h-4 w-4 mr-2" />
-          Generate Report
-        </Button>
+        <div className="space-x-2">
+          <Button variant="outline" onClick={() => generateComplianceReport(selectedFramework, 'json')}>
+            <Download className="h-4 w-4 mr-2" />
+            Download JSON
+          </Button>
+          <Button 
+            onClick={() => generateComplianceReport(selectedFramework, 'pdf')}
+            disabled={isGeneratingPDF}
+          >
+            {isGeneratingPDF ? (
+              <>
+                <div className="animate-spin h-4 w-4 border-b-2 border-white rounded-full mr-2"></div>
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <FileText className="h-4 w-4 mr-2" />
+                Generate PDF
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Framework Overview */}

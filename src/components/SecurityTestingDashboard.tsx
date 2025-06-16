@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,14 +11,17 @@ import {
   Play, 
   Download,
   Clock,
-  TrendingUp
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 import { securityTestingService, SecurityTestSuite, SecurityTestResult } from '@/services/securityTestingService';
 import { useToast } from '@/hooks/use-toast';
+import { pdfReportService } from '@/utils/pdfReportService';
 
 export const SecurityTestingDashboard = () => {
   const [testSuites, setTestSuites] = useState<SecurityTestSuite[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [lastRunTime, setLastRunTime] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -68,6 +70,35 @@ export const SecurityTestingDashboard = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const downloadPDFReport = async () => {
+    if (testSuites.length === 0) {
+      toast({
+        title: "No Data",
+        description: "Please run security tests first to generate a PDF report.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingPDF(true);
+    try {
+      await pdfReportService.generateSecurityTestReport(testSuites);
+      toast({
+        title: "PDF Generated",
+        description: "Security test report PDF has been downloaded.",
+      });
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF report.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -131,10 +162,29 @@ export const SecurityTestingDashboard = () => {
             )}
           </Button>
           {testSuites.length > 0 && (
-            <Button variant="outline" onClick={downloadReport}>
-              <Download className="h-4 w-4 mr-2" />
-              Download Report
-            </Button>
+            <>
+              <Button variant="outline" onClick={downloadReport}>
+                <Download className="h-4 w-4 mr-2" />
+                Download JSON
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={downloadPDFReport}
+                disabled={isGeneratingPDF}
+              >
+                {isGeneratingPDF ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-b-2 border-current rounded-full mr-2"></div>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </>
+                )}
+              </Button>
+            </>
           )}
         </div>
       </div>
