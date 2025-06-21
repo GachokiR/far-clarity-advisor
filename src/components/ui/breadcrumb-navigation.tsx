@@ -1,3 +1,4 @@
+
 import { ChevronRight, Home, ArrowLeft, LayoutDashboard, Shield } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BreadcrumbItem {
   label: string;
@@ -39,6 +41,7 @@ export const BreadcrumbNavigation = ({
 }: BreadcrumbNavigationProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   const handleBreadcrumbClick = (item: BreadcrumbItem) => {
     if (item.onClick) {
@@ -59,16 +62,16 @@ export const BreadcrumbNavigation = ({
   };
 
   return (
-    <div className="flex items-center space-x-4 mb-6">
-      <div className="flex items-center space-x-2">
+    <div className={`${isMobile ? 'flex flex-col space-y-3 mb-4' : 'flex items-center space-x-4 mb-6'}`}>
+      <div className={`${isMobile ? 'flex flex-wrap gap-2' : 'flex items-center space-x-2'}`}>
         {showBackButton && (
           <Button
             variant="outline"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             onClick={() => navigate(-1)}
-            className="flex items-center space-x-1"
+            className={`${isMobile ? 'text-xs px-2 py-1' : ''} flex items-center space-x-1`}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>Back</span>
           </Button>
         )}
@@ -76,23 +79,26 @@ export const BreadcrumbNavigation = ({
         {showDashboardButton && (
           <Button
             variant="outline"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             onClick={handleDashboardClick}
-            className="flex items-center space-x-1"
+            className={`${isMobile ? 'text-xs px-2 py-1' : ''} flex items-center space-x-1`}
           >
-            <LayoutDashboard className="h-4 w-4" />
-            <span>{securityContext ? 'Security Dashboard' : 'Dashboard'}</span>
+            <LayoutDashboard className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className={isMobile ? 'hidden sm:inline' : 'inline'}>
+              {securityContext ? 'Security Dashboard' : 'Dashboard'}
+            </span>
+            {isMobile && <span className="sm:hidden">Dash</span>}
           </Button>
         )}
 
         {showSecurityButton && currentPath !== '/security' && (
           <Button
             variant="outline"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             asChild
           >
-            <Link to="/security" className="flex items-center space-x-1">
-              <Shield className="h-4 w-4" />
+            <Link to="/security" className={`${isMobile ? 'text-xs px-2 py-1' : ''} flex items-center space-x-1`}>
+              <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Security</span>
             </Link>
           </Button>
@@ -101,11 +107,11 @@ export const BreadcrumbNavigation = ({
         {showHomeButton && !securityContext && (
           <Button
             variant="outline"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             asChild
           >
-            <Link to="/" className="flex items-center space-x-1">
-              <Home className="h-4 w-4" />
+            <Link to="/" className={`${isMobile ? 'text-xs px-2 py-1' : ''} flex items-center space-x-1`}>
+              <Home className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Home</span>
             </Link>
           </Button>
@@ -114,42 +120,45 @@ export const BreadcrumbNavigation = ({
         {securityContext && location.pathname === '/security' && (
           <Button
             variant="outline"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             asChild
           >
-            <Link to="/" className="flex items-center space-x-1">
-              <Home className="h-4 w-4" />
-              <span>Main Dashboard</span>
+            <Link to="/" className={`${isMobile ? 'text-xs px-2 py-1' : ''} flex items-center space-x-1`}>
+              <Home className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Main Dashboard</span>
+              {isMobile && <span className="sm:hidden">Main</span>}
             </Link>
           </Button>
         )}
       </div>
 
-      <Breadcrumb>
-        <BreadcrumbList>
+      <Breadcrumb className={isMobile ? 'overflow-x-auto' : ''}>
+        <BreadcrumbList className={isMobile ? 'flex-nowrap' : ''}>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link to="/">
-                <Home className="h-4 w-4" />
+                <Home className="h-3 w-3 sm:h-4 sm:w-4" />
               </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           
           {items.map((item, index) => (
-            <div key={index} className="flex items-center">
+            <div key={index} className="flex items-center flex-shrink-0">
               <BreadcrumbSeparator>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
                 {(item.href || item.onClick) && index < items.length - 1 ? (
                   <BreadcrumbLink 
-                    className="cursor-pointer hover:text-foreground"
+                    className={`${isMobile ? 'text-xs' : ''} cursor-pointer hover:text-foreground whitespace-nowrap`}
                     onClick={() => handleBreadcrumbClick(item)}
                   >
                     {item.label}
                   </BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  <BreadcrumbPage className={`${isMobile ? 'text-xs' : ''} whitespace-nowrap`}>
+                    {item.label}
+                  </BreadcrumbPage>
                 )}
               </BreadcrumbItem>
             </div>

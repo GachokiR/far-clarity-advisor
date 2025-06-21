@@ -12,6 +12,7 @@ import { ComplianceChecklistsTab } from "./compliance/ComplianceChecklistsTab";
 import { ComplianceQuickTools } from "./compliance/ComplianceQuickTools";
 import { SecurityErrorBoundary } from "./SecurityErrorBoundary";
 import { ComplianceAnalysisLoading } from "./SecurityLoadingStates";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ComplianceAnalysisProps {
   analysisResults?: any;
@@ -22,6 +23,7 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("checklists");
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchChecklists();
@@ -70,26 +72,42 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <SecurityErrorBoundary component="ComplianceAnalysisHeader">
         <ComplianceAnalysisHeader analysisResults={analysisResults} />
       </SecurityErrorBoundary>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="checklists">Compliance Checklists</TabsTrigger>
-          <TabsTrigger value="recommendations">
-            <Brain className="h-4 w-4 mr-2" />
-            AI Recommendations
+        <TabsList className={`${isMobile ? 'grid grid-cols-2 gap-1 h-auto p-1' : 'grid grid-cols-4'} w-full`}>
+          <TabsTrigger 
+            value="checklists" 
+            className={isMobile ? 'text-xs px-2 py-2' : ''}
+          >
+            {isMobile ? 'Checklists' : 'Compliance Checklists'}
           </TabsTrigger>
-          <TabsTrigger value="gaps">
-            <Shield className="h-4 w-4 mr-2" />
-            Compliance Gaps
+          <TabsTrigger 
+            value="recommendations" 
+            className={isMobile ? 'text-xs px-2 py-2' : ''}
+          >
+            <Brain className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            {isMobile ? 'AI' : 'AI Recommendations'}
           </TabsTrigger>
-          <TabsTrigger value="tools">Quick Tools</TabsTrigger>
+          <TabsTrigger 
+            value="gaps" 
+            className={isMobile ? 'text-xs px-2 py-2' : ''}
+          >
+            <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            {isMobile ? 'Gaps' : 'Compliance Gaps'}
+          </TabsTrigger>
+          <TabsTrigger 
+            value="tools" 
+            className={isMobile ? 'text-xs px-2 py-2' : ''}
+          >
+            {isMobile ? 'Tools' : 'Quick Tools'}
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="checklists" className="mt-6">
+        <TabsContent value="checklists" className="mt-4 sm:mt-6">
           <SecurityErrorBoundary component="ComplianceChecklistsTab">
             <ComplianceChecklistsTab 
               checklists={checklists}
@@ -99,19 +117,19 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
           </SecurityErrorBoundary>
         </TabsContent>
 
-        <TabsContent value="recommendations" className="mt-6">
+        <TabsContent value="recommendations" className="mt-4 sm:mt-6">
           <SecurityErrorBoundary component="AIRecommendations">
             <AIRecommendations />
           </SecurityErrorBoundary>
         </TabsContent>
 
-        <TabsContent value="gaps" className="mt-6">
+        <TabsContent value="gaps" className="mt-4 sm:mt-6">
           <SecurityErrorBoundary component="ComplianceGaps">
             <ComplianceGaps />
           </SecurityErrorBoundary>
         </TabsContent>
 
-        <TabsContent value="tools" className="mt-6">
+        <TabsContent value="tools" className="mt-4 sm:mt-6">
           <SecurityErrorBoundary component="ComplianceQuickTools">
             <ComplianceQuickTools />
           </SecurityErrorBoundary>

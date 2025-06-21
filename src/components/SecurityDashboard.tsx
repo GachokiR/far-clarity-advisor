@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +13,7 @@ import { ComplianceReportTab } from './security/ComplianceReportTab';
 import { ThreatDetectionTab } from './security/ThreatDetectionTab';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SecurityDashboardProps {
   onTabChange?: (tab: string) => void;
@@ -25,6 +27,7 @@ export const SecurityDashboard = ({ onTabChange }: SecurityDashboardProps) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadDashboardData();
@@ -66,24 +69,31 @@ export const SecurityDashboard = ({ onTabChange }: SecurityDashboardProps) => {
 
   return (
     <SecurityErrorBoundary component="SecurityDashboard">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6">
+        <div className={`${isMobile ? 'space-y-3' : 'flex items-center justify-between'}`}>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Security Dashboard</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Security Dashboard</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Advanced security monitoring and threat detection
             </p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className={`${isMobile ? 'flex flex-wrap gap-2' : 'flex items-center space-x-2'}`}>
             <Button 
               variant="outline" 
+              size={isMobile ? "sm" : "default"}
               onClick={() => onTabChange ? onTabChange('monitoring') : navigate('/security')}
-              className="flex items-center space-x-1"
+              className={`${isMobile ? 'text-xs px-2 py-1' : ''} flex items-center space-x-1`}
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Security</span>
+              <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Back to Security</span>
+              {isMobile && <span className="sm:hidden">Back</span>}
             </Button>
-            <Button onClick={() => setRefreshKey(prev => prev + 1)} variant="outline">
+            <Button 
+              onClick={() => setRefreshKey(prev => prev + 1)} 
+              variant="outline"
+              size={isMobile ? "sm" : "default"}
+              className={isMobile ? 'text-xs px-2 py-1' : ''}
+            >
               Refresh Data
             </Button>
           </div>
@@ -96,11 +106,31 @@ export const SecurityDashboard = ({ onTabChange }: SecurityDashboardProps) => {
         />
 
         <Tabs defaultValue="alerts" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="alerts">Security Alerts</TabsTrigger>
-            <TabsTrigger value="behavior">Behavioral Analysis</TabsTrigger>
-            <TabsTrigger value="compliance">Compliance</TabsTrigger>
-            <TabsTrigger value="threats">Threat Detection</TabsTrigger>
+          <TabsList className={`${isMobile ? 'flex overflow-x-auto w-full h-auto p-1 space-x-1' : 'grid grid-cols-4'} w-full`}>
+            <TabsTrigger 
+              value="alerts" 
+              className={isMobile ? 'flex-shrink-0 text-xs px-3 py-2' : ''}
+            >
+              {isMobile ? 'Alerts' : 'Security Alerts'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="behavior" 
+              className={isMobile ? 'flex-shrink-0 text-xs px-3 py-2' : ''}
+            >
+              {isMobile ? 'Behavior' : 'Behavioral Analysis'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="compliance" 
+              className={isMobile ? 'flex-shrink-0 text-xs px-3 py-2' : ''}
+            >
+              Compliance
+            </TabsTrigger>
+            <TabsTrigger 
+              value="threats" 
+              className={isMobile ? 'flex-shrink-0 text-xs px-3 py-2' : ''}
+            >
+              {isMobile ? 'Threats' : 'Threat Detection'}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="alerts" className="space-y-4">
