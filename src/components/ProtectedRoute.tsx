@@ -1,6 +1,5 @@
 
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate, useLocation } from "react-router-dom";
 import { SessionTimeoutWarning } from "./SessionTimeoutWarning";
 
 interface ProtectedRouteProps {
@@ -8,9 +7,13 @@ interface ProtectedRouteProps {
   requireAuth?: boolean;
 }
 
-export const ProtectedRoute = ({ children, requireAuth = true }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ children, requireAuth = false }: ProtectedRouteProps) => {
   const { user, loading, isConnected } = useAuth();
-  const location = useLocation();
+
+  // If authentication is not required, just render the children
+  if (!requireAuth) {
+    return <>{children}</>;
+  }
 
   if (!isConnected) {
     return (
@@ -32,11 +35,14 @@ export const ProtectedRoute = ({ children, requireAuth = true }: ProtectedRouteP
   }
 
   if (requireAuth && !user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
-  }
-
-  if (!requireAuth && user) {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+          <p className="text-gray-600">This page requires authentication, but login is currently disabled.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
