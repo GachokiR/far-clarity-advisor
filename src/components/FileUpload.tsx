@@ -1,13 +1,11 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, AlertCircle, CheckCircle, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { saveAnalysisResult } from "@/services/analysisService";
-import { saveComplianceChecklist } from "@/services/complianceService";
-import { uploadDocument, deleteDocument } from "@/services/storageService";
-import { useAuth } from "@/hooks/useAuth";
+import { validateFileUpload } from "@/utils/fileUploadSecurity";
 
 interface FileUploadProps {
   onAnalysisComplete: (results: any) => void;
@@ -27,7 +25,6 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -54,16 +51,32 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
   };
 
   const handleFiles = async (files: File[]) => {
-    if (!user) {
+    // Validate files before processing
+    const validationErrors: string[] = [];
+    const validFiles: File[] = [];
+
+    files.forEach(file => {
+      const validation = validateFileUpload(file);
+      if (validation.isValid && validation.sanitizedFile) {
+        validFiles.push(validation.sanitizedFile);
+      } else {
+        validationErrors.push(`${file.name}: ${validation.errors.join(', ')}`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to upload documents.",
+        title: "File Validation Error",
+        description: `Some files were rejected: ${validationErrors.join('; ')}`,
         variant: "destructive"
       });
+    }
+
+    if (validFiles.length === 0) {
       return;
     }
 
-    const newFiles: UploadedFile[] = files.map(file => ({
+    const newFiles: UploadedFile[] = validFiles.map(file => ({
       file,
       status: 'uploading'
     }));
@@ -72,20 +85,24 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
     setUploadProgress(0);
 
     try {
-      // Upload files to storage
+      // Simulate file upload process without actual storage
       const uploadPromises = newFiles.map(async (fileItem, index) => {
         try {
-          const { fileName, publicUrl } = await uploadDocument(fileItem.file, user.id);
+          // Simulate upload delay
+          await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+          
+          // Create a mock URL for the uploaded file
+          const mockUrl = `https://example.com/documents/${Date.now()}_${fileItem.file.name}`;
           
           setUploadedFiles(prev => 
             prev.map((item, i) => 
               i === index 
-                ? { ...item, storagePath: fileName, publicUrl, status: 'uploaded' as const }
+                ? { ...item, storagePath: `uploads/${Date.now()}_${fileItem.file.name}`, publicUrl: mockUrl, status: 'uploaded' as const }
                 : item
             )
           );
           
-          return { fileName, publicUrl };
+          return { fileName: `uploads/${Date.now()}_${fileItem.file.name}`, publicUrl: mockUrl };
         } catch (error) {
           console.error(`Error uploading ${fileItem.file.name}:`, error);
           setUploadedFiles(prev => 
@@ -163,41 +180,17 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
         estimatedTimeframe: "4-6 weeks",
         processingDetails: {
           documentTypes: ["RFP", "Contract", "Solicitation"],
-          pagesProcessed: files.reduce((sum, file) => sum + Math.floor(file.size / 1024), 0),
+          pagesProcessed: validFiles.reduce((sum, file) => sum + Math.floor(file.size / 1024), 0),
           keywordsFound: ["subcontracting", "compensation", "trafficking", "small business"]
         }
       };
 
-      // Save analysis result to database with document URL
-      const analysisResult = await saveAnalysisResult(
-        files[0].name,
-        mockResults,
-        'medium',
-        successfulUploads[0]?.publicUrl
-      );
-
-      // Save compliance checklists for each detected FAR clause
-      for (const clause of mockResults.farClausesDetected) {
-        await saveComplianceChecklist(
-          clause.clause,
-          [
-            "Review contract requirements and applicable regulations",
-            "Develop internal compliance procedures and documentation",
-            "Train relevant staff on compliance requirements",
-            "Establish monitoring and reporting systems",
-            "Conduct regular compliance audits"
-          ],
-          clause.cost,
-          clause.timeframe
-        );
-      }
-
       setIsAnalyzing(false);
-      onAnalysisComplete({ ...mockResults, id: analysisResult.id });
+      onAnalysisComplete({ ...mockResults, id: `demo_${Date.now()}` });
 
       toast({
         title: "Analysis Complete",
-        description: `Successfully analyzed ${successfulUploads.length} document(s) and saved ${mockResults.farClausesDetected.length} compliance checklists.`,
+        description: `Successfully analyzed ${successfulUploads.length} document(s) and detected ${mockResults.farClausesDetected.length} FAR clauses.`,
       });
 
     } catch (error) {
@@ -214,22 +207,10 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
   const handleDeleteFile = async (index: number) => {
     const fileItem = uploadedFiles[index];
     
-    if (fileItem.storagePath) {
-      try {
-        await deleteDocument(fileItem.storagePath);
-        toast({
-          title: "File Deleted",
-          description: "Document has been removed from storage.",
-        });
-      } catch (error) {
-        console.error('Error deleting file:', error);
-        toast({
-          title: "Error",
-          description: "Failed to delete file from storage.",
-          variant: "destructive"
-        });
-      }
-    }
+    toast({
+      title: "File Removed",
+      description: "Document has been removed from the upload list.",
+    });
     
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
@@ -241,14 +222,9 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
         className={`border-2 border-dashed transition-colors ${
           isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
         }`}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
-        onDrop={(e) => {
-          e.preventDefault();
-          setIsDragging(false);
-          const files = Array.from(e.dataTransfer.files);
-          handleFiles(files);
-        }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <CardContent className="p-8 text-center">
           <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -266,12 +242,7 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
             type="file"
             multiple
             accept=".pdf,.doc,.docx"
-            onChange={(e) => {
-              if (e.target.files) {
-                const files = Array.from(e.target.files);
-                handleFiles(files);
-              }
-            }}
+            onChange={handleFileSelect}
             className="hidden"
           />
         </CardContent>
@@ -311,7 +282,7 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
                       <div className="text-sm text-gray-600">
                         {(fileItem.file.size / 1024 / 1024).toFixed(2)} MB
                         {fileItem.publicUrl && (
-                          <span className="ml-2 text-green-600">• Stored securely</span>
+                          <span className="ml-2 text-green-600">• Demo Mode</span>
                         )}
                       </div>
                     </div>
@@ -320,15 +291,6 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
                     {fileItem.status === 'uploaded' && (
                       <>
                         <CheckCircle className="h-5 w-5 text-green-600" />
-                        {fileItem.publicUrl && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => window.open(fileItem.publicUrl, '_blank')}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        )}
                         <Button
                           size="sm"
                           variant="outline"
