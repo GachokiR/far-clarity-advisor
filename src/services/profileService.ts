@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 
 export interface UserProfile {
@@ -52,7 +51,7 @@ export const updateUserProfile = async (updates: Partial<UserProfile>) => {
     .select()
     .single();
 
-  if error) throw error;
+  if (error) throw error;
   return data as UserProfile;
 };
 
