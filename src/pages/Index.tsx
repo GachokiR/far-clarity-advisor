@@ -1,65 +1,24 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { ComplianceAnalysis } from "@/components/ComplianceAnalysis";
 import { Dashboard } from "@/components/Dashboard";
 import { ProfileManagement } from "@/components/UserProfile";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, FileText, AlertTriangle, CheckCircle, LogOut, Menu } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { Shield, FileText, AlertTriangle, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("upload");
   const [analysisResults, setAnalysisResults] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, signOut, loading, isConnected } = useAuth();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
-
-  // Redirect to auth if not logged in and Supabase is connected
-  useEffect(() => {
-    if (!loading && isConnected && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, isConnected, navigate]);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate("/auth");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
 
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
     setActiveTab("analysis");
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="h-12 w-12 text-blue-600 mx-auto mb-4 animate-pulse" />
-          <p className="text-lg text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -75,59 +34,11 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-3">
-              <Badge variant={isConnected ? "default" : "secondary"}>
-                {isConnected ? "Supabase Connected" : "Demo Mode"}
+            {/* Status Badge */}
+            <div className="flex items-center">
+              <Badge variant="default">
+                Demo Mode
               </Badge>
-              {user ? (
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-600 truncate max-w-32">{user.email}</span>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </div>
-              ) : (
-                <Button onClick={() => navigate("/auth")}>
-                  Sign In
-                </Button>
-              )}
-            </div>
-
-            {/* Mobile Menu */}
-            <div className="md:hidden">
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Menu</SheetTitle>
-                    <SheetDescription>Navigation and account options</SheetDescription>
-                  </SheetHeader>
-                  <div className="mt-6 space-y-4">
-                    <Badge variant={isConnected ? "default" : "secondary"} className="w-full justify-center">
-                      {isConnected ? "Supabase Connected" : "Demo Mode"}
-                    </Badge>
-                    {user ? (
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600 break-all">{user.email}</p>
-                        <Button variant="outline" onClick={handleSignOut} className="w-full">
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button onClick={() => navigate("/auth")} className="w-full">
-                        Sign In
-                      </Button>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
             </div>
           </div>
         </div>
@@ -144,13 +55,6 @@ const Index = () => {
             Translate complex government contracting requirements into clear, actionable guidance. 
             Upload documents, analyze FAR clauses, and get compliance checklists.
           </p>
-          {!user && isConnected && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg mx-4">
-              <p className="text-blue-800 text-sm sm:text-base">
-                <strong>Please sign in</strong> to access full functionality and save your analysis results.
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Quick Stats */}
