@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { getUserProfile, updateUserProfile, type UserProfile } from "@/services/profileService";
 import { useAuth } from "@/hooks/useAuth";
 import { AccountSecurity } from "./AccountSecurity";
-import { User, Settings, Shield } from "lucide-react";
+import { SubscriptionTier } from "./SubscriptionTier";
+import { User, Settings, Shield, Crown } from "lucide-react";
 
 export const ProfileManagement = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -96,10 +97,14 @@ export const ProfileManagement = () => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
             <span>Profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="flex items-center space-x-2">
+            <Crown className="h-4 w-4" />
+            <span>Subscription</span>
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center space-x-2">
             <Shield className="h-4 w-4" />
@@ -209,6 +214,10 @@ export const ProfileManagement = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="subscription">
+          <SubscriptionTier />
         </TabsContent>
 
         <TabsContent value="security">

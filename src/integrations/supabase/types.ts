@@ -297,7 +297,12 @@ export type Database = {
           id: string
           last_name: string | null
           role: string | null
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
+          subscription_updated_at: string
+          trial_end_date: string
+          trial_start_date: string
           updated_at: string
+          usage_limits: Json
         }
         Insert: {
           company?: string | null
@@ -307,7 +312,12 @@ export type Database = {
           id: string
           last_name?: string | null
           role?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          subscription_updated_at?: string
+          trial_end_date?: string
+          trial_start_date?: string
           updated_at?: string
+          usage_limits?: Json
         }
         Update: {
           company?: string | null
@@ -317,7 +327,12 @@ export type Database = {
           id?: string
           last_name?: string | null
           role?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          subscription_updated_at?: string
+          trial_end_date?: string
+          trial_start_date?: string
           updated_at?: string
+          usage_limits?: Json
         }
         Relationships: []
       }
@@ -326,10 +341,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_tier_limits: {
+        Args: { tier: Database["public"]["Enums"]["subscription_tier"] }
+        Returns: Json
+      }
+      get_user_tier: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["subscription_tier"]
+      }
+      is_trial_expired: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      upgrade_user_tier: {
+        Args: {
+          user_id: string
+          new_tier: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      subscription_tier: "trial" | "basic" | "professional" | "enterprise"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -444,6 +477,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      subscription_tier: ["trial", "basic", "professional", "enterprise"],
+    },
   },
 } as const
