@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, Shield } from "lucide-react";
-import { getComplianceChecklists, updateComplianceStatus } from "@/services/complianceService";
 import { ComplianceChecklist } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { AIRecommendations } from "./AIRecommendations";
@@ -20,34 +19,57 @@ interface ComplianceAnalysisProps {
 
 export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps) => {
   const [checklists, setChecklists] = useState<ComplianceChecklist[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Changed from true to false since we're in demo mode
   const [activeTab, setActiveTab] = useState("checklists");
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    fetchChecklists();
+    // In demo mode, we'll use mock data instead of fetching from database
+    initializeMockChecklists();
   }, []);
 
-  const fetchChecklists = async () => {
-    try {
-      const data = await getComplianceChecklists();
-      setChecklists(data);
-    } catch (error) {
-      console.error('Error fetching checklists:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load compliance checklists.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+  const initializeMockChecklists = () => {
+    // Create mock compliance checklists for demo
+    const mockChecklists: ComplianceChecklist[] = [
+      {
+        id: "demo-1",
+        user_id: "demo-user",
+        far_clause: "FAR 52.219-14",
+        requirements: [
+          "Establish subcontracting plan for small business participation",
+          "Document prime contractor performance percentage",
+          "Submit quarterly subcontracting reports"
+        ],
+        status: "pending",
+        estimated_cost: "$5,000",
+        timeframe: "2-3 weeks",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: "demo-2", 
+        user_id: "demo-user",
+        far_clause: "FAR 52.204-10",
+        requirements: [
+          "Report executive compensation annually",
+          "Maintain compensation documentation",
+          "Submit required certifications"
+        ],
+        status: "in_progress",
+        estimated_cost: "$2,500", 
+        timeframe: "1 week",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+    
+    setChecklists(mockChecklists);
   };
 
   const handleStatusUpdate = async (id: string, status: 'pending' | 'in_progress' | 'completed') => {
     try {
-      await updateComplianceStatus(id, status);
+      // In demo mode, just update local state
       setChecklists(prev => 
         prev.map(item => 
           item.id === id ? { ...item, status } : item
@@ -60,7 +82,7 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
     } catch (error) {
       console.error('Error updating status:', error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: "Failed to update status.",
         variant: "destructive"
       });
