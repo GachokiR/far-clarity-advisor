@@ -13,12 +13,12 @@ export const AuthHeader = ({ isLogin }: AuthHeaderProps) => {
         <Shield className="h-12 w-12 text-blue-600" />
       </div>
       <CardTitle className="text-2xl">
-        {isLogin ? "Sign In" : "Sign Up"}
+        {isLogin ? "Welcome Back" : "Join Far V.02"}
       </CardTitle>
       <CardDescription>
         {isLogin 
-          ? "Welcome back to Far V.02" 
-          : "Create your Far V.02 account"
+          ? "Sign in to continue your FAR compliance journey" 
+          : "Start your free trial today - no credit card required"
         }
       </CardDescription>
     </CardHeader>

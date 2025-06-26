@@ -1,24 +1,121 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { FileUpload } from "@/components/FileUpload";
 import { ComplianceAnalysis } from "@/components/ComplianceAnalysis";
 import { Dashboard } from "@/components/Dashboard";
 import { ProfileManagement } from "@/components/UserProfile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, FileText, AlertTriangle, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, FileText, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("upload");
   const [analysisResults, setAnalysisResults] = useState(null);
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
     setActiveTab("analysis");
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Far V.02</h1>
+                  <p className="text-xs sm:text-sm text-gray-600">FAR Compliance Expert</p>
+                </div>
+              </div>
+              
+              <Link to="/auth">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        {/* Hero Section */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
+              FAR Compliance
+              <span className="text-blue-600 block">Made Simple</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Transform complex government contracting requirements into clear, actionable guidance with AI-powered analysis.
+            </p>
+            <Link to="/auth">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4">
+                Start Your 14-Day Free Trial
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <p className="text-sm text-gray-500 mt-3">No credit card required • Cancel anytime</p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <FileText className="h-8 w-8 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Document Analysis</h3>
+                <p className="text-gray-600 text-sm">Upload and analyze RFPs, bids, and contract documents instantly</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <AlertTriangle className="h-8 w-8 text-yellow-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Risk Assessment</h3>
+                <p className="text-gray-600 text-sm">Identify potential compliance risks before they become problems</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Auto Compliance</h3>
+                <p className="text-gray-600 text-sm">Generate compliance checklists and action items automatically</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <Shield className="h-8 w-8 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Secure Platform</h3>
+                <p className="text-gray-600 text-sm">Enterprise-grade security for your sensitive contract data</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* CTA Section */}
+          <div className="bg-gradient-to-r from-blue-600 to-teal-600 rounded-2xl p-8 text-center text-white">
+            <h3 className="text-2xl font-bold mb-4">Ready to Transform Your FAR Compliance Process?</h3>
+            <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
+              Join hundreds of contractors who are already saving time and reducing risk with Far V.02
+            </p>
+            <Link to="/auth">
+              <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
+                Get Started Now - It's Free
+              </Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -37,7 +134,7 @@ const Index = () => {
             {/* Status Badge */}
             <div className="flex items-center">
               <Badge variant="default">
-                Demo Mode
+                Trial Active
               </Badge>
             </div>
           </div>

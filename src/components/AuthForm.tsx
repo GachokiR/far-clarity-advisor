@@ -13,6 +13,7 @@ import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicato
 import { logAuthAttempt } from "@/utils/securityLogger";
 import { sanitizeError } from "@/utils/errorSanitizer";
 import { logger } from "@/utils/productionLogger";
+import { EnhancedSignupForm, SignupFormData } from "@/components/EnhancedSignupForm";
 
 interface AuthFormProps {
   isLogin: boolean;
@@ -28,7 +29,7 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -51,33 +52,14 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
       return;
     }
 
-    if (!isLogin) {
-      const passwordValidation = validatePassword(password);
-      if (!passwordValidation.isValid) {
-        setError(passwordValidation.errors.join(', '));
-        setLoading(false);
-        return;
-      }
-    }
-
     try {
-      if (isLogin) {
-        await signIn(emailValidation.sanitizedValue, password);
-        logAuthAttempt(emailValidation.sanitizedValue, true);
-        logger.info('User signed in successfully', { email: emailValidation.sanitizedValue }, 'AuthForm');
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
-      } else {
-        await signUp(emailValidation.sanitizedValue, password);
-        logAuthAttempt(emailValidation.sanitizedValue, true);
-        logger.info('User signed up successfully', { email: emailValidation.sanitizedValue }, 'AuthForm');
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account.",
-        });
-      }
+      await signIn(emailValidation.sanitizedValue, password);
+      logAuthAttempt(emailValidation.sanitizedValue, true);
+      logger.info('User signed in successfully', { email: emailValidation.sanitizedValue }, 'AuthForm');
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully signed in.",
+      });
       navigate("/");
     } catch (err: any) {
       logAuthAttempt(emailValidation.sanitizedValue, false, { error: err.message });
@@ -90,46 +72,82 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={isLogin ? 1 : 8}
-          autoComplete={isLogin ? "current-password" : "new-password"}
-        />
-        
-        {!isLogin && <PasswordStrengthIndicator password={password} showRequirements />}
-      </div>
-      
-      {error && (
-        <div className="flex items-center space-x-2 text-red-600 text-sm">
-          <AlertCircle className="h-4 w-4" />
-          <span>{error}</span>
-        </div>
-      )}
+  const handleSignup = async (formData: SignupFormData) => {
+    setLoading(true);
+    setError("");
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Please wait..." : (isLogin ? "Sign In" : "Sign Up")}
-      </Button>
-    </form>
-  );
+    try {
+      const userData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        company: formData.company,
+        role: formData.role,
+        company_size: formData.companySize,
+        primary_agency: formData.primaryAgency,
+        referral_source: formData.referralSource
+      };
+
+      await signUp(formData.email, formData.password, userData);
+      logAuthAttempt(formData.email, true);
+      logger.info('User signed up successfully', { email: formData.email }, 'AuthForm');
+      
+      toast({
+        title: "Welcome to Far V.02! 🎉",
+        description: "Your 14-day free trial has started. Please check your email to verify your account.",
+      });
+      navigate("/");
+    } catch (err: any) {
+      logAuthAttempt(formData.email, false, { error: err.message });
+      logger.error('Signup failed', { email: formData.email, error: err.message }, 'AuthForm');
+      
+      const sanitizedError = sanitizeError(err);
+      setError(sanitizedError.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isLogin) {
+    return (
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </div>
+        
+        {error && (
+          <div className="flex items-center space-x-2 text-red-600 text-sm">
+            <AlertCircle className="h-4 w-4" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Signing In..." : "Sign In"}
+        </Button>
+      </form>
+    );
+  }
+
+  return <EnhancedSignupForm onSubmit={handleSignup} loading={loading} error={error} />;
 };
