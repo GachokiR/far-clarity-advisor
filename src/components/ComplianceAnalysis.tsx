@@ -1,7 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Brain, Shield, Download, FileText } from "lucide-react";
 import { ComplianceChecklist } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { AIRecommendations } from "./AIRecommendations";
@@ -12,6 +15,8 @@ import { ComplianceQuickTools } from "./compliance/ComplianceQuickTools";
 import { SecurityErrorBoundary } from "./SecurityErrorBoundary";
 import { ComplianceAnalysisLoading } from "./SecurityLoadingStates";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { pdfReportService } from "@/utils/pdfReportService";
+import { wordReportService } from "@/utils/wordReportService";
 
 interface ComplianceAnalysisProps {
   analysisResults?: any;
@@ -19,18 +24,18 @@ interface ComplianceAnalysisProps {
 
 export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps) => {
   const [checklists, setChecklists] = useState<ComplianceChecklist[]>([]);
-  const [loading, setLoading] = useState(false); // Changed from true to false since we're in demo mode
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("checklists");
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportFormat, setReportFormat] = useState<'pdf' | 'word'>('pdf');
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // In demo mode, we'll use mock data instead of fetching from database
     initializeMockChecklists();
   }, []);
 
   const initializeMockChecklists = () => {
-    // Create mock compliance checklists for demo
     const mockChecklists: ComplianceChecklist[] = [
       {
         id: "demo-1",
@@ -69,7 +74,6 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
 
   const handleStatusUpdate = async (id: string, status: 'pending' | 'in_progress' | 'completed') => {
     try {
-      // In demo mode, just update local state
       setChecklists(prev => 
         prev.map(item => 
           item.id === id ? { ...item, status } : item
@@ -89,6 +93,61 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
     }
   };
 
+  const generateFARReport = async () => {
+    setIsGeneratingReport(true);
+    try {
+      if (reportFormat === 'pdf') {
+        // Create a mock compliance report for PDF generation
+        const mockReport = {
+          type: 'far',
+          summary: {
+            totalSecurityEvents: 15,
+            criticalAlerts: 2,
+            openIncidents: 1,
+            complianceScore: 85
+          },
+          details: {
+            recommendations: [
+              'Establish a compliance tracking system for ongoing reporting requirements',
+              'Implement quarterly review processes for subcontracting performance',
+              'Create standardized templates for required documentation',
+              'Schedule regular training sessions for compliance team members'
+            ],
+            securityEvents: [
+              {
+                type: 'Compliance Check',
+                severity: 'info',
+                timestamp: new Date().toISOString()
+              },
+              {
+                type: 'Document Review',
+                severity: 'low',
+                timestamp: new Date(Date.now() - 86400000).toISOString()
+              }
+            ]
+          }
+        };
+        await pdfReportService.generateComplianceReport(mockReport);
+      } else {
+        await wordReportService.generateFARComplianceReport(analysisResults);
+      }
+      
+      toast({
+        title: "Report Generated",
+        description: `FAR compliance report has been downloaded as ${reportFormat.toUpperCase()}.`,
+      });
+    } catch (error) {
+      console.error('Report generation failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate report.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   if (loading) {
     return <ComplianceAnalysisLoading />;
   }
@@ -98,6 +157,49 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
       <SecurityErrorBoundary component="ComplianceAnalysisHeader">
         <ComplianceAnalysisHeader analysisResults={analysisResults} />
       </SecurityErrorBoundary>
+
+      {/* Report Generation Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <FileText className="h-5 w-5" />
+            <span>Generate FAR Compliance Report</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Format:</span>
+              <Select value={reportFormat} onValueChange={(value: 'pdf' | 'word') => setReportFormat(value)}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="word">Word</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              onClick={generateFARReport}
+              disabled={isGeneratingReport}
+              className="flex items-center space-x-2"
+            >
+              {isGeneratingReport ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-b-2 border-current rounded-full"></div>
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  <span>Generate Report</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className={`${isMobile ? 'grid grid-cols-2 gap-1 h-auto p-1' : 'grid grid-cols-4'} w-full`}>

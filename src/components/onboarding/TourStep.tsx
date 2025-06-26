@@ -13,6 +13,7 @@ interface TourStepProps {
 export const TourStep = ({ onNext, onPrevious }: TourStepProps) => {
   const [runTour, setRunTour] = useState(false);
   const [tourComplete, setTourComplete] = useState(false);
+  const [showTourContent, setShowTourContent] = useState(true);
 
   const steps: Step[] = [
     {
@@ -47,16 +48,36 @@ export const TourStep = ({ onNext, onPrevious }: TourStepProps) => {
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       setRunTour(false);
       setTourComplete(true);
+      setShowTourContent(true);
     }
   };
 
   const startTour = () => {
+    // Hide the tour content and close the modal to start the interactive tour
+    setShowTourContent(false);
     setRunTour(true);
+    
+    // Close the onboarding modal temporarily
+    const modal = document.querySelector('[role="dialog"]');
+    if (modal) {
+      (modal as HTMLElement).style.display = 'none';
+    }
   };
 
   const skipTour = () => {
     setTourComplete(true);
   };
+
+  // Restore modal visibility when tour completes
+  useEffect(() => {
+    if (tourComplete && !showTourContent) {
+      const modal = document.querySelector('[role="dialog"]');
+      if (modal) {
+        (modal as HTMLElement).style.display = 'block';
+      }
+      setShowTourContent(true);
+    }
+  }, [tourComplete, showTourContent]);
 
   return (
     <div className="text-center space-y-6">
@@ -73,114 +94,124 @@ export const TourStep = ({ onNext, onPrevious }: TourStepProps) => {
             textColor: '#374151',
             backgroundColor: 'white',
             overlayColor: 'rgba(0, 0, 0, 0.4)',
-            zIndex: 1000,
+            zIndex: 10000,
+          },
+          spotlight: {
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
           }
         }}
       />
 
-      <div className="flex justify-center mb-6">
-        <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center">
-          <Eye className="h-10 w-10 text-purple-600" />
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-3xl font-bold text-gray-900 mb-2">
-          Platform Tour
-        </h3>
-        <p className="text-lg text-gray-600">
-          Let's explore the key features you'll use every day
-        </p>
-      </div>
-
-      {!tourComplete ? (
-        <div className="max-w-2xl mx-auto">
-          <p className="text-gray-600 mb-8">
-            We'll show you around with interactive highlights of the most important 
-            features. This will help you navigate efficiently and get the most out of Far V.02.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <Upload className="h-6 w-6 text-blue-600" />
-                  <div>
-                    <h4 className="font-semibold">Document Upload</h4>
-                    <p className="text-sm text-gray-600">Upload and process files</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <BarChart3 className="h-6 w-6 text-green-600" />
-                  <div>
-                    <h4 className="font-semibold">FAR Analysis</h4>
-                    <p className="text-sm text-gray-600">AI-powered compliance review</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <FileText className="h-6 w-6 text-purple-600" />
-                  <div>
-                    <h4 className="font-semibold">Dashboard</h4>
-                    <p className="text-sm text-gray-600">Central command center</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <FileText className="h-6 w-6 text-orange-600" />
-                  <div>
-                    <h4 className="font-semibold">Reports</h4>
-                    <p className="text-sm text-gray-600">Generate compliance reports</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {showTourContent && (
+        <>
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center">
+              <Eye className="h-10 w-10 text-purple-600" />
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <Button size="lg" onClick={startTour} className="bg-purple-600 hover:bg-purple-700">
-              Start Interactive Tour
-            </Button>
-            <div>
-              <Button variant="ghost" onClick={skipTour} className="text-gray-500">
-                Skip Tour
+          <div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+              Platform Tour
+            </h3>
+            <p className="text-lg text-gray-600">
+              Let's explore the key features you'll use every day
+            </p>
+          </div>
+
+          {!tourComplete ? (
+            <div className="max-w-2xl mx-auto">
+              <p className="text-gray-600 mb-8">
+                We'll show you around with interactive highlights of the most important 
+                features. This will help you navigate efficiently and get the most out of Far V.02.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-4 mb-8">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <Upload className="h-6 w-6 text-blue-600" />
+                      <div>
+                        <h4 className="font-semibold">Document Upload</h4>
+                        <p className="text-sm text-gray-600">Upload and process files</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <BarChart3 className="h-6 w-6 text-green-600" />
+                      <div>
+                        <h4 className="font-semibold">FAR Analysis</h4>
+                        <p className="text-sm text-gray-600">AI-powered compliance review</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-6 w-6 text-purple-600" />
+                      <div>
+                        <h4 className="font-semibold">Dashboard</h4>
+                        <p className="text-sm text-gray-600">Central command center</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-6 w-6 text-orange-600" />
+                      <div>
+                        <h4 className="font-semibold">Reports</h4>
+                        <p className="text-sm text-gray-600">Generate compliance reports</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-4">
+                <Button size="lg" onClick={startTour} className="bg-purple-600 hover:bg-purple-700">
+                  Start Interactive Tour
+                </Button>
+                <div>
+                  <Button variant="ghost" onClick={skipTour} className="text-gray-500">
+                    Skip Tour
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <Eye className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-green-800">Tour Complete!</h4>
+                    <p className="text-sm text-green-600">
+                      You now know where to find the key features. Let's upload your first document.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Button size="lg" onClick={onNext} className="bg-blue-600 hover:bg-blue-700">
+                Continue to Upload
               </Button>
             </div>
-          </div>
-        </div>
-      ) : (
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <Eye className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-green-800">Tour Complete!</h4>
-                <p className="text-sm text-green-600">
-                  You now know where to find the key features. Let's upload your first document.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <Button size="lg" onClick={onNext} className="bg-blue-600 hover:bg-blue-700">
-            Continue to Upload
-          </Button>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -1,8 +1,11 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, FileText, ArrowLeft } from 'lucide-react';
 import { pdfReportService } from '@/utils/pdfReportService';
+import { wordReportService } from '@/utils/wordReportService';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +16,8 @@ interface ComplianceReportTabProps {
 
 export const ComplianceReportTab = ({ complianceReport, onTabChange }: ComplianceReportTabProps) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isGeneratingWord, setIsGeneratingWord] = useState(false);
+  const [reportFormat, setReportFormat] = useState<'pdf' | 'word'>('pdf');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -30,34 +35,56 @@ export const ComplianceReportTab = ({ complianceReport, onTabChange }: Complianc
     URL.revokeObjectURL(url);
   };
 
-  const downloadPDFReport = async () => {
+  const generateFormattedReport = async () => {
     if (!complianceReport) {
       toast({
         title: "No Data",
-        description: "No compliance report available to generate PDF.",
+        description: "No compliance report available to generate report.",
         variant: "destructive"
       });
       return;
     }
 
-    setIsGeneratingPDF(true);
-    try {
-      await pdfReportService.generateComplianceReport(complianceReport);
-      toast({
-        title: "PDF Generated",
-        description: "Compliance report PDF has been downloaded.",
-      });
-    } catch (error) {
-      console.error('PDF generation failed:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF report.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGeneratingPDF(false);
+    if (reportFormat === 'pdf') {
+      setIsGeneratingPDF(true);
+      try {
+        await pdfReportService.generateComplianceReport(complianceReport);
+        toast({
+          title: "PDF Generated",
+          description: "Compliance report PDF has been downloaded.",
+        });
+      } catch (error) {
+        console.error('PDF generation failed:', error);
+        toast({
+          title: "Error",
+          description: "Failed to generate PDF report.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsGeneratingPDF(false);
+      }
+    } else {
+      setIsGeneratingWord(true);
+      try {
+        await wordReportService.generateComplianceReport(complianceReport);
+        toast({
+          title: "Word Document Generated",
+          description: "Compliance report Word document has been downloaded.",
+        });
+      } catch (error) {
+        console.error('Word generation failed:', error);
+        toast({
+          title: "Error",
+          description: "Failed to generate Word document.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsGeneratingWord(false);
+      }
     }
   };
+
+  const isGenerating = isGeneratingPDF || isGeneratingWord;
 
   return (
     <Card>
@@ -116,29 +143,44 @@ export const ComplianceReportTab = ({ complianceReport, onTabChange }: Complianc
               </ul>
             </div>
 
-            <div className="flex space-x-2">
-              <Button className="flex-1" onClick={downloadJSONReport}>
-                <Download className="h-4 w-4 mr-2" />
-                Download JSON Report
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={downloadPDFReport}
-                disabled={isGeneratingPDF}
-              >
-                {isGeneratingPDF ? (
-                  <>
-                    <div className="animate-spin h-4 w-4 border-b-2 border-current rounded-full mr-2"></div>
-                    Generating PDF...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Download PDF Report
-                  </>
-                )}
-              </Button>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium">Report Format:</span>
+                <Select value={reportFormat} onValueChange={(value: 'pdf' | 'word') => setReportFormat(value)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pdf">PDF</SelectItem>
+                    <SelectItem value="word">Word</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                <Button className="flex-1" onClick={downloadJSONReport}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download JSON Report
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={generateFormattedReport}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-b-2 border-current rounded-full mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Download {reportFormat.toUpperCase()} Report
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         )}
