@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Download, FileText, CheckCircle } from "lucide-react";
 import { FileUpload } from "@/components/FileUpload";
+import { wordReportService } from "@/utils/wordReportService";
 
 interface UploadStepProps {
   onNext: () => void;
@@ -12,6 +13,7 @@ interface UploadStepProps {
 
 export const UploadStep = ({ onNext, onPrevious }: UploadStepProps) => {
   const [hasUploaded, setHasUploaded] = useState(false);
+  const [isGeneratingSample, setIsGeneratingSample] = useState(false);
 
   const handleAnalysisComplete = (results: any) => {
     setHasUploaded(true);
@@ -19,33 +21,15 @@ export const UploadStep = ({ onNext, onPrevious }: UploadStepProps) => {
     sessionStorage.setItem('onboarding_analysis', JSON.stringify(results));
   };
 
-  const downloadSampleContract = () => {
-    // Create a sample contract content
-    const sampleContent = `SAMPLE GOVERNMENT CONTRACT
-    
-Contract Number: W912DY-24-C-0001
-Date: ${new Date().toLocaleDateString()}
-
-FEDERAL ACQUISITION REGULATION (FAR) CLAUSES:
-
-52.219-14 LIMITATIONS ON SUBCONTRACTING
-The offeror agrees to comply with the limitations on subcontracting requirements.
-
-52.225-1 BUY AMERICAN--SUPPLIES
-Only domestic end products will be delivered under this contract.
-
-52.204-21 BASIC SAFEGUARDING OF COVERED CONTRACTOR INFORMATION SYSTEMS
-The contractor shall provide adequate security for all covered contractor information systems.
-
-This is a sample contract for demonstration purposes only.`;
-
-    const blob = new Blob([sampleContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'sample-government-contract.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+  const downloadSampleContract = async () => {
+    setIsGeneratingSample(true);
+    try {
+      await wordReportService.generateSampleGovernmentContract();
+    } catch (error) {
+      console.error('Failed to generate sample contract:', error);
+    } finally {
+      setIsGeneratingSample(false);
+    }
   };
 
   return (
@@ -76,10 +60,20 @@ This is a sample contract for demonstration purposes only.`;
             <Button
               variant="outline"
               onClick={downloadSampleContract}
+              disabled={isGeneratingSample}
               className="mb-6"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Download Sample Contract
+              {isGeneratingSample ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-b-2 border-current rounded-full mr-2"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Sample Contract
+                </>
+              )}
             </Button>
           </div>
 
