@@ -1,12 +1,13 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Upload, BarChart3, Users, Shield, Brain } from "lucide-react";
+import { FileText, Upload, BarChart3, Users, Shield, Brain, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TrialLimitsIndicator } from "@/components/TrialLimitsIndicator";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
+  const { restartOnboarding } = useOnboarding();
 
   const handleUpgrade = () => {
     // TODO: Implement upgrade flow
@@ -15,11 +16,22 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Welcome to Compliance Pro</h2>
-        <p className="text-muted-foreground">
-          Your comprehensive FAR compliance and security management platform
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Welcome to Compliance Pro</h2>
+          <p className="text-muted-foreground">
+            Your comprehensive FAR compliance and security management platform
+          </p>
+        </div>
+        
+        <Button
+          variant="outline"
+          onClick={restartOnboarding}
+          className="flex items-center space-x-2"
+        >
+          <HelpCircle className="h-4 w-4" />
+          <span>Restart Tour</span>
+        </Button>
       </div>
 
       {/* Trial Limits Indicator - Compact variant for header */}

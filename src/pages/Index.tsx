@@ -6,6 +6,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { ProfileManagement } from "@/components/UserProfile";
 import { TrialLimitsIndicator } from "@/components/TrialLimitsIndicator";
 import { TrialLimitsWrapper } from "@/components/TrialLimitsWrapper";
+import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -129,6 +130,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Onboarding Wizard */}
+      <OnboardingWizard />
+
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -206,16 +210,32 @@ const Index = () => {
         {/* Main Application Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`${isMobile ? 'grid grid-cols-2 gap-1 h-auto p-1' : 'grid grid-cols-4'} w-full`}>
-            <TabsTrigger value="upload" className={isMobile ? 'text-xs px-2 py-3' : ''}>
+            <TabsTrigger 
+              value="upload" 
+              className={isMobile ? 'text-xs px-2 py-3' : ''}
+              data-tour="upload-area"
+            >
               {isMobile ? 'Upload' : 'Document Upload'}
             </TabsTrigger>
-            <TabsTrigger value="analysis" className={isMobile ? 'text-xs px-2 py-3' : ''}>
+            <TabsTrigger 
+              value="analysis" 
+              className={isMobile ? 'text-xs px-2 py-3' : ''}
+              data-tour="analysis-tab"
+            >
               {isMobile ? 'Analysis' : 'FAR Analysis'}
             </TabsTrigger>
-            <TabsTrigger value="dashboard" className={isMobile ? 'text-xs px-2 py-3' : ''}>
+            <TabsTrigger 
+              value="dashboard" 
+              className={isMobile ? 'text-xs px-2 py-3' : ''}
+              data-tour="dashboard-tab"
+            >
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="profile" className={isMobile ? 'text-xs px-2 py-3' : ''}>
+            <TabsTrigger 
+              value="profile" 
+              className={isMobile ? 'text-xs px-2 py-3' : ''}
+              data-tour="profile-tab"
+            >
               Profile
             </TabsTrigger>
           </TabsList>
