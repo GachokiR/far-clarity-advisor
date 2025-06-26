@@ -95,6 +95,34 @@ export const useUsageLimits = () => {
     }
   };
 
+  // New trial-specific functions
+  const getTrialDaysRemaining = () => {
+    if (!profile) return 0;
+    const trialEndDate = new Date(profile.trial_end_date);
+    const currentDate = new Date();
+    return Math.ceil((trialEndDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const isTrialExpiring = () => {
+    return getTrialDaysRemaining() <= 3;
+  };
+
+  const isTrialExpired = () => {
+    return getTrialDaysRemaining() <= 0;
+  };
+
+  const hasReachedAnyLimit = () => {
+    return !canUploadDocument() || !canRunAnalysis() || !canAddTeamMember();
+  };
+
+  const isApproachingLimits = () => {
+    const docPercentage = getUsagePercentage('documents');
+    const analysisPercentage = getUsagePercentage('analyses');
+    const teamPercentage = getUsagePercentage('team_members');
+    
+    return docPercentage >= 80 || analysisPercentage >= 80 || teamPercentage >= 80;
+  };
+
   return {
     profile,
     usage,
@@ -103,6 +131,12 @@ export const useUsageLimits = () => {
     canRunAnalysis,
     canAddTeamMember,
     getUsagePercentage,
-    refreshUsage: fetchUsageData
+    refreshUsage: fetchUsageData,
+    // New trial functions
+    getTrialDaysRemaining,
+    isTrialExpiring,
+    isTrialExpired,
+    hasReachedAnyLimit,
+    isApproachingLimits
   };
 };

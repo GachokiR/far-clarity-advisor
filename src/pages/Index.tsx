@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FileUpload } from "@/components/FileUpload";
 import { ComplianceAnalysis } from "@/components/ComplianceAnalysis";
 import { Dashboard } from "@/components/Dashboard";
 import { ProfileManagement } from "@/components/UserProfile";
+import { TrialLimitsIndicator } from "@/components/TrialLimitsIndicator";
+import { TrialLimitsWrapper } from "@/components/TrialLimitsWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,16 +13,25 @@ import { Shield, FileText, AlertTriangle, CheckCircle, ArrowRight } from "lucide
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("upload");
   const [analysisResults, setAnalysisResults] = useState(null);
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
     setActiveTab("analysis");
+  };
+
+  const handleUpgrade = () => {
+    toast({
+      title: "Upgrade Available",
+      description: "Contact support to upgrade your plan and unlock unlimited access.",
+    });
   };
 
   if (!user) {
@@ -154,6 +164,13 @@ const Index = () => {
           </p>
         </div>
 
+        {/* Trial Status Banner */}
+        <TrialLimitsIndicator 
+          variant="banner"
+          onUpgrade={handleUpgrade}
+          className="mb-6"
+        />
+
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card>
@@ -212,13 +229,33 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <FileUpload onAnalysisComplete={handleAnalysisComplete} />
+                <TrialLimitsWrapper 
+                  checkType="documents"
+                  blockingMessage="You've reached your document upload limit for this trial."
+                  showLimitsBeforeAction={true}
+                >
+                  <FileUpload onAnalysisComplete={handleAnalysisComplete} />
+                </TrialLimitsWrapper>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="analysis" className="mt-4 sm:mt-6">
-            <ComplianceAnalysis analysisResults={analysisResults} />
+            <div className="space-y-4">
+              {/* Trial limits indicator for analysis page */}
+              <TrialLimitsIndicator 
+                variant="full"
+                onUpgrade={handleUpgrade}
+              />
+              
+              <TrialLimitsWrapper 
+                checkType="analyses"
+                blockingMessage="You've reached your analysis limit for this month."
+                showLimitsBeforeAction={false}
+              >
+                <ComplianceAnalysis analysisResults={analysisResults} />
+              </TrialLimitsWrapper>
+            </div>
           </TabsContent>
 
           <TabsContent value="dashboard" className="mt-4 sm:mt-6">

@@ -3,9 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { FileText, Upload, BarChart3, Users, Shield, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { TrialLimitsIndicator } from "@/components/TrialLimitsIndicator";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
+
+  const handleUpgrade = () => {
+    // TODO: Implement upgrade flow
+    console.log('Upgrade clicked');
+  };
 
   return (
     <div className="space-y-6">
@@ -15,6 +21,13 @@ export const Dashboard = () => {
           Your comprehensive FAR compliance and security management platform
         </p>
       </div>
+
+      {/* Trial Limits Indicator - Compact variant for header */}
+      <TrialLimitsIndicator 
+        variant="compact" 
+        onUpgrade={handleUpgrade}
+        className="mb-6"
+      />
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
