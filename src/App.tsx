@@ -11,6 +11,7 @@ import { ConnectionStatus } from "@/components/ConnectionStatus";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Security from "./pages/Security";
+import Analysis from "./pages/Analysis";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -48,6 +49,7 @@ const App = () => {
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/security" element={<Security />} />
+                  <Route path="/analysis" element={<Analysis />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

@@ -35,6 +35,12 @@ export const AppHeader = () => {
               Dashboard
             </Link>
             <Link 
+              to="/analysis" 
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              Analysis
+            </Link>
+            <Link 
               to="/security" 
               className="text-gray-600 hover:text-gray-900 font-medium"
             >

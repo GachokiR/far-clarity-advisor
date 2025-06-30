@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -20,14 +21,22 @@ interface DocumentUploadModalProps {
 
 export const DocumentUploadModal = ({ isOpen, onClose }: DocumentUploadModalProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleAnalysisComplete = (results: any) => {
     debug.log('Document analysis completed', results);
+    
+    // Store analysis results in sessionStorage for the Analysis page
+    sessionStorage.setItem('analysisResults', JSON.stringify(results));
+    
     toast({
       title: "Analysis Complete",
       description: `Successfully analyzed ${results.documentsAnalyzed || 0} document(s) and detected ${results.farClausesDetected?.length || 0} FAR clauses.`
     });
+    
+    // Close modal and navigate to analysis page
     onClose();
+    navigate('/analysis');
   };
 
   return (
