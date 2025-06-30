@@ -68,12 +68,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {isDemoUser && (
-        <DemoBanner 
-          expiresAt={userProfile?.demo_session_expires_at} 
-          onLogout={endDemoMode}
-        />
-      )}
+      {isDemoUser && <DemoBanner />}
       <div className="container mx-auto px-4 py-8">
         <Dashboard />
       </div>

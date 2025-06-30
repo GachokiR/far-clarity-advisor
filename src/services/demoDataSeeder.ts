@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 
 export interface DemoData {
@@ -272,7 +271,8 @@ export class DemoDataSeeder {
     }
   }
 
-  private async cleanupDemoUser(userId: string): Promise<void> {
+  // Make this method public by removing 'private'
+  async cleanupDemoUser(userId: string): Promise<void> {
     try {
       // Delete in reverse order to handle any foreign key constraints
       await Promise.all([
