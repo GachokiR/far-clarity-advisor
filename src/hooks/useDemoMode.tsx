@@ -19,6 +19,42 @@ export const useDemoMode = () => {
   const expiryTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const handleExpiredSession = useCallback(() => {
+    console.log('Demo session expired, cleaning up...');
+    sessionStorage.removeItem('demo-session');
+    sessionStorage.removeItem('demo-banner-dismissed');
+    setDemoSession(null);
+    setTimeRemaining(0);
+    
+    if (expiryTimerRef.current) {
+      clearTimeout(expiryTimerRef.current);
+      expiryTimerRef.current = null;
+    }
+    
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+
+    toast({
+      title: "Demo Session Expired",
+      description: "Your 30-minute demo session has ended. Start a new demo to continue exploring.",
+      variant: "destructive"
+    });
+  }, [toast]);
+
+  const setupExpiryTimer = useCallback((session: DemoSession) => {
+    const now = new Date();
+    const expiry = new Date(session.expiresAt);
+    const timeUntilExpiry = expiry.getTime() - now.getTime();
+
+    if (timeUntilExpiry > 0) {
+      expiryTimerRef.current = setTimeout(() => {
+        handleExpiredSession();
+      }, timeUntilExpiry);
+    }
+  }, [handleExpiredSession]);
+
   // Check for existing demo session on mount
   useEffect(() => {
     const savedSession = sessionStorage.getItem('demo-session');
@@ -43,7 +79,7 @@ export const useDemoMode = () => {
         sessionStorage.removeItem('demo-session');
       }
     }
-  }, []);
+  }, [setupExpiryTimer, handleExpiredSession]);
 
   // Update countdown timer
   useEffect(() => {
@@ -64,40 +100,7 @@ export const useDemoMode = () => {
         }
       };
     }
-  }, [demoSession, timeRemaining]);
-
-  const setupExpiryTimer = useCallback((session: DemoSession) => {
-    const now = new Date();
-    const expiry = new Date(session.expiresAt);
-    const timeUntilExpiry = expiry.getTime() - now.getTime();
-
-    if (timeUntilExpiry > 0) {
-      expiryTimerRef.current = setTimeout(() => {
-        handleExpiredSession();
-      }, timeUntilExpiry);
-    }
-  }, []);
-
-  const handleExpiredSession = useCallback(() => {
-    sessionStorage.removeItem('demo-session');
-    sessionStorage.removeItem('demo-banner-dismissed');
-    setDemoSession(null);
-    setTimeRemaining(0);
-    
-    if (expiryTimerRef.current) {
-      clearTimeout(expiryTimerRef.current);
-    }
-    
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
-    }
-
-    toast({
-      title: "Demo Session Expired",
-      description: "Your 30-minute demo session has ended. Start a new demo to continue exploring.",
-      variant: "destructive"
-    });
-  }, [toast]);
+  }, [demoSession, timeRemaining, handleExpiredSession]);
 
   const startDemo = useCallback(async () => {
     setLoading(true);
@@ -185,10 +188,12 @@ export const useDemoMode = () => {
     
     if (expiryTimerRef.current) {
       clearTimeout(expiryTimerRef.current);
+      expiryTimerRef.current = null;
     }
     
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
     }
     
     toast({

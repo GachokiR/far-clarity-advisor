@@ -7,24 +7,9 @@ import { useDemoMode } from '@/hooks/useDemoMode';
 
 export const DemoBanner = () => {
   const [isVisible, setIsVisible] = useState(true);
+  const { isDemoMode, formattedTimeRemaining, endDemo } = useDemoMode();
   
-  console.log('DemoBanner rendering');
-  
-  // Use try-catch to handle potential hook errors
-  let isDemoMode = false;
-  let formattedTimeRemaining = '';
-  let endDemo = () => {};
-  
-  try {
-    const demoState = useDemoMode();
-    isDemoMode = demoState.isDemoMode;
-    formattedTimeRemaining = demoState.formattedTimeRemaining;
-    endDemo = demoState.endDemo;
-    console.log('Demo state:', { isDemoMode, formattedTimeRemaining });
-  } catch (error) {
-    console.error('Error getting demo state:', error);
-    return null;
-  }
+  console.log('DemoBanner rendering', { isDemoMode, formattedTimeRemaining });
 
   useEffect(() => {
     const dismissed = sessionStorage.getItem('demo-banner-dismissed');

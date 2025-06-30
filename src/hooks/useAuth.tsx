@@ -1,7 +1,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConnected } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -19,17 +19,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isConnected, setIsConnected] = useState(true);
 
-  console.log('AuthProvider initializing, isSupabaseConnected:', isSupabaseConnected);
+  console.log('AuthProvider initializing');
 
   useEffect(() => {
     console.log('AuthProvider useEffect running');
     
-    if (!isSupabaseConnected) {
-      console.log('Supabase not connected, setting loading to false');
-      setLoading(false);
-      return;
-    }
+    // Test Supabase connection first
+    const testConnection = async () => {
+      try {
+        const { data, error } = await supabase.from('profiles').select('count').limit(1);
+        if (error) {
+          console.error('Supabase connection test failed:', error);
+          setIsConnected(false);
+        } else {
+          console.log('Supabase connection test successful');
+          setIsConnected(true);
+        }
+      } catch (error) {
+        console.error('Supabase connection test exception:', error);
+        setIsConnected(false);
+      }
+    };
+
+    testConnection();
 
     // Set up auth state listener FIRST
     console.log('Setting up auth state listener');
@@ -64,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     console.log('Attempting sign in for:', email);
     
-    if (!isSupabaseConnected) {
+    if (!isConnected) {
       const error = new Error('Please connect Supabase to enable authentication');
       console.error('Sign in failed:', error.message);
       throw error;
@@ -86,7 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, userData?: any) => {
     console.log('Attempting sign up for:', email);
     
-    if (!isSupabaseConnected) {
+    if (!isConnected) {
       const error = new Error('Please connect Supabase to enable authentication');
       console.error('Sign up failed:', error.message);
       throw error;
@@ -115,7 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     console.log('Attempting sign out');
     
-    if (!isSupabaseConnected) {
+    if (!isConnected) {
       const error = new Error('Please connect Supabase to enable authentication');
       console.error('Sign out failed:', error.message);
       throw error;
@@ -137,7 +151,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signUp,
     signOut,
     loading,
-    isConnected: isSupabaseConnected,
+    isConnected,
   };
 
   console.log('AuthProvider rendering with user:', user?.email, 'loading:', loading);

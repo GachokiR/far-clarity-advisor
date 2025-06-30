@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface DemoData {
   userId: string;
@@ -23,7 +23,7 @@ export class DemoDataSeeder {
     try {
       console.log('Creating demo user with direct profile creation...');
 
-      // Create demo user profile directly without foreign key constraint
+      // Create demo user profile directly
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -35,7 +35,7 @@ export class DemoDataSeeder {
           role: 'Contract Manager',
           is_demo_user: true,
           demo_session_expires_at: expiresAt.toISOString(),
-          subscription_tier: 'professional' // Give demo users full access
+          subscription_tier: 'professional'
         });
 
       if (profileError) {
@@ -43,32 +43,31 @@ export class DemoDataSeeder {
         throw new Error(`Demo profile creation failed: ${profileError.message}`);
       }
 
-      // Create demo data with rollback capability
-      await this.seedDemoDataWithRollback(demoUserId);
+      // Create demo data with error handling
+      try {
+        await this.seedDemoData(demoUserId);
+      } catch (seedError) {
+        console.error('Demo data seeding failed, cleaning up:', seedError);
+        await this.cleanupDemoUser(demoUserId);
+        throw new Error('Demo data seeding failed');
+      }
       
       console.log('Demo user created successfully:', demoUserId);
       return demoUserId;
     } catch (error) {
       console.error('Demo user creation failed:', error);
-      // Cleanup on failure
       await this.cleanupDemoUser(demoUserId);
       throw error;
     }
   }
 
-  private async seedDemoDataWithRollback(userId: string): Promise<void> {
-    try {
-      await Promise.all([
-        this.createDemoDocuments(userId),
-        this.createDemoAnalyses(userId),
-        this.createDemoComplianceGaps(userId),
-        this.createDemoRecommendations(userId)
-      ]);
-    } catch (error) {
-      console.error('Failed to seed demo data, rolling back:', error);
-      await this.cleanupDemoUser(userId);
-      throw new Error('Demo data seeding failed');
-    }
+  private async seedDemoData(userId: string): Promise<void> {
+    await Promise.all([
+      this.createDemoDocuments(userId),
+      this.createDemoAnalyses(userId),
+      this.createDemoComplianceGaps(userId),
+      this.createDemoRecommendations(userId)
+    ]);
   }
 
   private async createDemoDocuments(userId: string): Promise<void> {
@@ -271,7 +270,6 @@ export class DemoDataSeeder {
     }
   }
 
-  // Make this method public by removing 'private'
   async cleanupDemoUser(userId: string): Promise<void> {
     try {
       // Delete in reverse order to handle any foreign key constraints
