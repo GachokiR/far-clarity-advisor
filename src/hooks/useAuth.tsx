@@ -20,15 +20,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log('AuthProvider initializing, isSupabaseConnected:', isSupabaseConnected);
+
   useEffect(() => {
+    console.log('AuthProvider useEffect running');
+    
     if (!isSupabaseConnected) {
+      console.log('Supabase not connected, setting loading to false');
       setLoading(false);
       return;
     }
 
     // Set up auth state listener FIRST
+    console.log('Setting up auth state listener');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -36,31 +43,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    console.log('Checking for existing session');
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+      } else {
+        console.log('Got existing session:', session?.user?.email);
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting sign in for:', email);
+    
     if (!isSupabaseConnected) {
-      throw new Error('Please connect Supabase to enable authentication');
+      const error = new Error('Please connect Supabase to enable authentication');
+      console.error('Sign in failed:', error.message);
+      throw error;
     }
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (error) throw error;
+    
+    if (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    } else {
+      console.log('Sign in successful for:', email);
+    }
   };
 
   const signUp = async (email: string, password: string, userData?: any) => {
+    console.log('Attempting sign up for:', email);
+    
     if (!isSupabaseConnected) {
-      throw new Error('Please connect Supabase to enable authentication');
+      const error = new Error('Please connect Supabase to enable authentication');
+      console.error('Sign up failed:', error.message);
+      throw error;
     }
+    
     const redirectUrl = `${window.location.origin}/`;
+    console.log('Sign up redirect URL:', redirectUrl);
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -70,15 +103,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         data: userData || {}
       }
     });
-    if (error) throw error;
+    
+    if (error) {
+      console.error('Sign up error:', error);
+      throw error;
+    } else {
+      console.log('Sign up successful for:', email);
+    }
   };
 
   const signOut = async () => {
+    console.log('Attempting sign out');
+    
     if (!isSupabaseConnected) {
-      throw new Error('Please connect Supabase to enable authentication');
+      const error = new Error('Please connect Supabase to enable authentication');
+      console.error('Sign out failed:', error.message);
+      throw error;
     }
+    
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    } else {
+      console.log('Sign out successful');
+    }
   };
 
   const value = {
@@ -90,6 +139,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     isConnected: isSupabaseConnected,
   };
+
+  console.log('AuthProvider rendering with user:', user?.email, 'loading:', loading);
 
   return (
     <AuthContext.Provider value={value}>

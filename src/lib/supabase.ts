@@ -4,11 +4,37 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = "https://qbrncgvscyyvatdgfidt.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFicm5jZ3ZzY3l5dmF0ZGdmaWR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTI2MzYsImV4cCI6MjA2NDcyODYzNn0.dVLC4qSHbW8kodyecHpQ8uh3DC7bh7ksQXNj4ekrWRE";
 
+console.log('Initializing Supabase client');
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase key exists:', !!supabaseAnonKey);
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
   }
+});
+
+// Test connection
+const testConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('count').limit(1);
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+      return false;
+    } else {
+      console.log('Supabase connection test successful');
+      return true;
+    }
+  } catch (error) {
+    console.error('Supabase connection test exception:', error);
+    return false;
+  }
+};
+
+// Test on initialization
+testConnection().then(connected => {
+  console.log('Supabase connection status:', connected);
 });
 
 export const isSupabaseConnected = true;

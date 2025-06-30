@@ -28,16 +28,25 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, isConnected } = useAuth();
   const { startDemoMode } = useDemoAuth();
   const { loading: demoLoading, error: demoError } = useDemoMode();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  console.log('AuthForm rendering, isLogin:', isLogin, 'isConnected:', isConnected);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted for:', email);
     setLoading(true);
     setError("");
+
+    if (!isConnected) {
+      setError("Authentication service is not available. Please try demo mode.");
+      setLoading(false);
+      return;
+    }
 
     // Rate limiting check
     const rateLimitKey = `auth_${email}`;
@@ -67,6 +76,7 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
       });
       navigate("/");
     } catch (err: any) {
+      console.error('Login error:', err);
       logAuthAttempt(emailValidation.sanitizedValue, false, { error: err.message });
       logger.error('Authentication failed', { email: emailValidation.sanitizedValue, error: err.message }, 'AuthForm');
       
@@ -78,8 +88,15 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   };
 
   const handleSignup = async (formData: SignupFormData) => {
+    console.log('Signup form submitted for:', formData.email);
     setLoading(true);
     setError("");
+
+    if (!isConnected) {
+      setError("Authentication service is not available. Please try demo mode.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const userData = {
@@ -102,6 +119,7 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
       });
       navigate("/");
     } catch (err: any) {
+      console.error('Signup error:', err);
       logAuthAttempt(formData.email, false, { error: err.message });
       logger.error('Signup failed', { email: formData.email, error: err.message }, 'AuthForm');
       
@@ -113,10 +131,10 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   };
 
   const handleStartDemo = async () => {
+    console.log('Starting demo mode');
     try {
       await startDemoMode();
     } catch (error) {
-      // Error handling is done in useDemoAuth and useDemoMode hooks
       console.error('Demo start failed:', error);
     }
   };
