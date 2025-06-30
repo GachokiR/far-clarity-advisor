@@ -3,12 +3,17 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+interface AuthResult {
+  data: any;
+  error: { message: string } | null;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, userData?: any) => Promise<void>;
-  signOut: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<AuthResult>;
+  signUp: (email: string, password: string, userData?: any) => Promise<AuthResult>;
+  signOut: () => Promise<AuthResult>;
   loading: boolean;
   isConnected: boolean;
 }
@@ -23,15 +28,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   console.log('AuthProvider initializing');
 
+  // Add connection check function
+  const checkSupabaseConnection = async (): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.getSession();
+      return !error;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     console.log('AuthProvider useEffect running');
     
     // Test Supabase connection first
     const testConnection = async () => {
       try {
-        const { data, error } = await supabase.from('profiles').select('count').limit(1);
-        if (error) {
-          console.error('Supabase connection test failed:', error);
+        const isConnected = await checkSupabaseConnection();
+        if (!isConnected) {
+          console.error('Supabase connection test failed');
           setIsConnected(false);
         } else {
           console.log('Supabase connection test successful');
@@ -75,72 +90,117 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<AuthResult> => {
     console.log('Attempting sign in for:', email);
     
-    if (!isConnected) {
-      const error = new Error('Please connect Supabase to enable authentication');
-      console.error('Sign in failed:', error.message);
-      throw error;
-    }
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) {
-      console.error('Sign in error:', error);
-      throw error;
-    } else {
+    try {
+      // Check connection first
+      const connectionOk = await checkSupabaseConnection();
+      if (!connectionOk) {
+        return {
+          data: null,
+          error: { message: 'Unable to connect to authentication service. Please check your connection and try again.' }
+        };
+      }
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        return {
+          data: null,
+          error: { message: error.message || 'An unexpected error occurred during sign in.' }
+        };
+      }
+      
       console.log('Sign in successful for:', email);
+      return { data, error: null };
+    } catch (err: any) {
+      console.error('Sign in exception:', err);
+      return { 
+        data: null, 
+        error: { message: err.message || 'An unexpected error occurred during sign in.' }
+      };
     }
   };
 
-  const signUp = async (email: string, password: string, userData?: any) => {
+  const signUp = async (email: string, password: string, userData?: any): Promise<AuthResult> => {
     console.log('Attempting sign up for:', email);
     
-    if (!isConnected) {
-      const error = new Error('Please connect Supabase to enable authentication');
-      console.error('Sign up failed:', error.message);
-      throw error;
-    }
-    
-    const redirectUrl = `${window.location.origin}/`;
-    console.log('Sign up redirect URL:', redirectUrl);
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: userData || {}
+    try {
+      // Check connection first
+      const connectionOk = await checkSupabaseConnection();
+      if (!connectionOk) {
+        return {
+          data: null,
+          error: { message: 'Unable to connect to authentication service. Please check your connection and try again.' }
+        };
       }
-    });
-    
-    if (error) {
-      console.error('Sign up error:', error);
-      throw error;
-    } else {
+      
+      const redirectUrl = `${window.location.origin}/`;
+      console.log('Sign up redirect URL:', redirectUrl);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: userData || {}
+        }
+      });
+      
+      if (error) {
+        console.error('Sign up error:', error);
+        return {
+          data: null,
+          error: { message: error.message || 'An unexpected error occurred during sign up.' }
+        };
+      }
+      
       console.log('Sign up successful for:', email);
+      return { data, error: null };
+    } catch (err: any) {
+      console.error('Sign up exception:', err);
+      return { 
+        data: null, 
+        error: { message: err.message || 'An unexpected error occurred during sign up.' }
+      };
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<AuthResult> => {
     console.log('Attempting sign out');
     
-    if (!isConnected) {
-      const error = new Error('Please connect Supabase to enable authentication');
-      console.error('Sign out failed:', error.message);
-      throw error;
-    }
-    
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Sign out error:', error);
-      throw error;
-    } else {
+    try {
+      // Check connection first
+      const connectionOk = await checkSupabaseConnection();
+      if (!connectionOk) {
+        return {
+          data: null,
+          error: { message: 'Unable to connect to authentication service. Please check your connection and try again.' }
+        };
+      }
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+        return {
+          data: null,
+          error: { message: error.message || 'An unexpected error occurred during sign out.' }
+        };
+      }
+      
       console.log('Sign out successful');
+      return { data: true, error: null };
+    } catch (err: any) {
+      console.error('Sign out exception:', err);
+      return { 
+        data: null, 
+        error: { message: err.message || 'An unexpected error occurred during sign out.' }
+      };
     }
   };
 

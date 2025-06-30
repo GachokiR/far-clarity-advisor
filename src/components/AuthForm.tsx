@@ -42,12 +42,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
     setLoading(true);
     setError("");
 
-    if (!isConnected) {
-      setError("Authentication service is not available. Please try demo mode.");
-      setLoading(false);
-      return;
-    }
-
     // Rate limiting check
     const rateLimitKey = `auth_${email}`;
     if (!authRateLimiter.isAllowed(rateLimitKey)) {
@@ -67,19 +61,23 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
     }
 
     try {
-      await signIn(emailValidation.sanitizedValue, password);
-      logAuthAttempt(emailValidation.sanitizedValue, true);
-      logger.info('User signed in successfully', { email: emailValidation.sanitizedValue }, 'AuthForm');
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
-      navigate("/");
-    } catch (err: any) {
-      console.error('Login error:', err);
-      logAuthAttempt(emailValidation.sanitizedValue, false, { error: err.message });
-      logger.error('Authentication failed', { email: emailValidation.sanitizedValue, error: err.message }, 'AuthForm');
+      const result = await signIn(emailValidation.sanitizedValue, password);
       
+      if (result.error) {
+        logAuthAttempt(emailValidation.sanitizedValue, false, { error: result.error.message });
+        logger.error('Authentication failed', { email: emailValidation.sanitizedValue, error: result.error.message }, 'AuthForm');
+        setError(result.error.message);
+      } else {
+        logAuthAttempt(emailValidation.sanitizedValue, true);
+        logger.info('User signed in successfully', { email: emailValidation.sanitizedValue }, 'AuthForm');
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in.",
+        });
+        navigate("/");
+      }
+    } catch (err: any) {
+      console.error('Unexpected login error:', err);
       const sanitizedError = sanitizeError(err);
       setError(sanitizedError.message);
     } finally {
@@ -92,12 +90,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
     setLoading(true);
     setError("");
 
-    if (!isConnected) {
-      setError("Authentication service is not available. Please try demo mode.");
-      setLoading(false);
-      return;
-    }
-
     try {
       const userData = {
         first_name: formData.firstName,
@@ -109,20 +101,24 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
         referral_source: formData.referralSource
       };
 
-      await signUp(formData.email, formData.password, userData);
-      logAuthAttempt(formData.email, true);
-      logger.info('User signed up successfully', { email: formData.email }, 'AuthForm');
+      const result = await signUp(formData.email, formData.password, userData);
       
-      toast({
-        title: "Welcome to Far V.02! 🎉",
-        description: "Your 14-day free trial has started. Please check your email to verify your account.",
-      });
-      navigate("/");
+      if (result.error) {
+        logAuthAttempt(formData.email, false, { error: result.error.message });
+        logger.error('Signup failed', { email: formData.email, error: result.error.message }, 'AuthForm');
+        setError(result.error.message);
+      } else {
+        logAuthAttempt(formData.email, true);
+        logger.info('User signed up successfully', { email: formData.email }, 'AuthForm');
+        
+        toast({
+          title: "Welcome to Far V.02! 🎉",
+          description: "Your 14-day free trial has started. Please check your email to verify your account.",
+        });
+        navigate("/");
+      }
     } catch (err: any) {
-      console.error('Signup error:', err);
-      logAuthAttempt(formData.email, false, { error: err.message });
-      logger.error('Signup failed', { email: formData.email, error: err.message }, 'AuthForm');
-      
+      console.error('Unexpected signup error:', err);
       const sanitizedError = sanitizeError(err);
       setError(sanitizedError.message);
     } finally {
