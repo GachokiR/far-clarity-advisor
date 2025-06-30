@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DemoAuthProvider } from "@/hooks/useDemoAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ConnectionStatus } from "@/components/ConnectionStatus";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Security from "./pages/Security";
@@ -41,6 +42,7 @@ const App = () => {
             <TooltipProvider>
               <Toaster />
               <Sonner />
+              <ConnectionStatus />
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Index />} />
