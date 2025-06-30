@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { demoDataSeeder } from '@/services/demoDataSeeder';
 import { useToast } from '@/hooks/use-toast';
+import { debug } from '@/utils/debug';
 
 interface DemoSession {
   userId: string;
@@ -21,8 +22,10 @@ export const useDemoMode = () => {
   const expiryTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  debug.demo('useDemoMode hook initialized');
+
   const handleExpiredSession = useCallback(() => {
-    console.log('Demo session expired, cleaning up...');
+    debug.demo('Demo session expired, cleaning up');
     sessionStorage.removeItem('demo-session');
     sessionStorage.removeItem('demo-banner-dismissed');
     setDemoSession(null);
@@ -52,6 +55,11 @@ export const useDemoMode = () => {
     const expiry = new Date(session.expiresAt);
     const timeUntilExpiry = expiry.getTime() - now.getTime();
 
+    debug.demo('Setting up expiry timer', { 
+      timeUntilExpiry: Math.round(timeUntilExpiry / 1000),
+      expiresAt: session.expiresAt 
+    });
+
     if (timeUntilExpiry > 0) {
       expiryTimerRef.current = setTimeout(() => {
         handleExpiredSession();
@@ -61,12 +69,19 @@ export const useDemoMode = () => {
 
   // Check for existing demo session on mount
   useEffect(() => {
+    debug.demo('Checking for existing demo session');
     const savedSession = sessionStorage.getItem('demo-session');
     if (savedSession) {
       try {
         const session = JSON.parse(savedSession) as DemoSession;
         const now = new Date();
         const expiry = new Date(session.expiresAt);
+        
+        debug.demo('Found saved session', { 
+          userId: session.userId,
+          isExpired: expiry <= now,
+          timeRemaining: Math.round((expiry.getTime() - now.getTime()) / 1000)
+        });
         
         if (expiry > now) {
           setDemoSession(session);
@@ -75,22 +90,28 @@ export const useDemoMode = () => {
           // Calculate and set initial time remaining
           const remaining = Math.floor((expiry.getTime() - now.getTime()) / 1000);
           setTimeRemaining(remaining);
+          debug.demo('Demo session restored', { remaining });
         } else {
+          debug.demo('Saved session expired, cleaning up');
           handleExpiredSession();
         }
       } catch (error) {
-        console.error('Invalid demo session data:', error);
+        debug.error('Invalid demo session data', error, 'DEMO');
         sessionStorage.removeItem('demo-session');
       }
+    } else {
+      debug.demo('No existing demo session found');
     }
   }, [setupExpiryTimer, handleExpiredSession]);
 
   // Update countdown timer
   useEffect(() => {
     if (demoSession && timeRemaining > 0) {
+      debug.demo('Starting countdown timer', { timeRemaining });
       countdownTimerRef.current = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
+            debug.demo('Countdown reached zero, expiring session');
             handleExpiredSession();
             return 0;
           }
@@ -107,11 +128,12 @@ export const useDemoMode = () => {
   }, [demoSession, handleExpiredSession]);
 
   const startDemo = useCallback(async () => {
+    const timer = debug.startTimer('demo-start');
     setLoading(true);
     setError(null);
     
     try {
-      console.log('Starting demo mode...');
+      debug.demo('Starting demo mode');
       
       // Validate environment
       if (!crypto?.randomUUID) {
@@ -119,6 +141,7 @@ export const useDemoMode = () => {
       }
 
       const userId = await demoDataSeeder.createDemoUser();
+      debug.demo('Demo user created', { userId });
       
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 30 * 60 * 1000); // 30 minutes
@@ -141,7 +164,8 @@ export const useDemoMode = () => {
         description: "Explore Far V.02 with pre-loaded sample data. Your session will last 30 minutes.",
       });
 
-      console.log('Demo mode started successfully:', userId);
+      debug.demo('Demo mode started successfully', { userId, expiresAt: session.expiresAt });
+      timer.end('Demo mode started');
       
       // Add small delay to ensure state is updated before navigation
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -149,7 +173,8 @@ export const useDemoMode = () => {
       
       return session;
     } catch (error: any) {
-      console.error('Failed to start demo:', error);
+      debug.error('Failed to start demo', error, 'DEMO');
+      timer.end('Demo start failed');
       
       let errorMessage = 'Failed to start demo mode';
       
@@ -179,13 +204,14 @@ export const useDemoMode = () => {
   }, [toast, setupExpiryTimer, navigate]);
 
   const endDemo = useCallback(async () => {
-    console.log('Ending demo mode...');
+    debug.demo('Ending demo mode');
     
     if (demoSession?.userId) {
       try {
         await demoDataSeeder.cleanupDemoUser(demoSession.userId);
+        debug.demo('Demo cleanup completed', { userId: demoSession.userId });
       } catch (error) {
-        console.error('Demo cleanup error:', error);
+        debug.error('Demo cleanup error', error, 'DEMO');
       }
     }
     
@@ -216,6 +242,7 @@ export const useDemoMode = () => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      debug.demo('useDemoMode cleanup');
       if (expiryTimerRef.current) {
         clearTimeout(expiryTimerRef.current);
       }
@@ -232,6 +259,13 @@ export const useDemoMode = () => {
     const seconds = timeRemaining % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }, [timeRemaining]);
+
+  debug.demo('useDemoMode state', { 
+    isDemoMode, 
+    loading, 
+    timeRemaining,
+    hasSession: !!demoSession 
+  });
 
   return {
     demoSession,

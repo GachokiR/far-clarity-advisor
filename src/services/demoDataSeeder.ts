@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { debug } from '@/utils/debug';
 
 export interface DemoData {
   userId: string;
@@ -16,12 +16,13 @@ export class DemoDataSeeder {
   private readonly DEMO_SESSION_MINUTES = 30;
 
   async createDemoUser(): Promise<string> {
+    const timer = debug.startTimer('demo-user-creation');
     const timestamp = Date.now();
     const demoUserEmail = `demo-${timestamp}@demo.farclarity.app`;
     const demoPassword = 'DemoPass123!';
 
     try {
-      console.log('Creating demo user with Supabase Auth...');
+      debug.data('Creating demo user with Supabase Auth', { email: demoUserEmail });
 
       // Step 1: Create auth user with proper signup
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -42,7 +43,7 @@ export class DemoDataSeeder {
       });
 
       if (authError) {
-        console.error('Auth signup error:', authError);
+        debug.error('Auth signup error', authError, 'DATA');
         throw new Error(`Demo user creation failed: ${authError.message}`);
       }
 
@@ -51,7 +52,7 @@ export class DemoDataSeeder {
       }
 
       const userId = authData.user.id;
-      console.log('Demo auth user created:', userId);
+      debug.data('Demo auth user created', { userId });
 
       // Step 2: Sign in the demo user to establish session
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -60,11 +61,11 @@ export class DemoDataSeeder {
       });
 
       if (signInError) {
-        console.error('Demo user sign-in error:', signInError);
+        debug.error('Demo user sign-in error', signInError, 'DATA');
         throw new Error(`Failed to sign in demo user: ${signInError.message}`);
       }
 
-      console.log('Demo user signed in successfully');
+      debug.data('Demo user signed in successfully');
 
       // Step 3: Wait for profile creation trigger and update with demo settings
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -84,17 +85,21 @@ export class DemoDataSeeder {
         .eq('id', userId);
 
       if (profileError) {
-        console.error('Failed to update demo profile:', profileError);
+        debug.error('Failed to update demo profile', profileError, 'DATA');
         // Continue anyway as this is not critical
+      } else {
+        debug.data('Demo profile updated successfully');
       }
 
       // Step 4: Seed demo data
       await this.seedDemoData(userId);
       
-      console.log('Demo user created successfully:', userId);
+      debug.data('Demo user created successfully', { userId });
+      timer.end('Demo user creation completed');
       return userId;
     } catch (error) {
-      console.error('Demo user creation failed:', error);
+      debug.error('Demo user creation failed', error, 'DATA');
+      timer.end('Demo user creation failed');
       // Clean up on failure
       await supabase.auth.signOut();
       throw error;
@@ -102,15 +107,23 @@ export class DemoDataSeeder {
   }
 
   private async seedDemoData(userId: string): Promise<void> {
+    const timer = debug.startTimer('demo-data-seeding');
+    debug.data('Starting demo data seeding', { userId });
+
     await Promise.all([
       this.createDemoDocuments(userId),
       this.createDemoAnalyses(userId),
       this.createDemoComplianceGaps(userId),
       this.createDemoRecommendations(userId)
     ]);
+
+    timer.end('Demo data seeding completed');
+    debug.data('Demo data seeding completed successfully');
   }
 
   private async createDemoDocuments(userId: string): Promise<void> {
+    debug.data('Creating demo documents', { userId });
+    
     const documents = [
       {
         id: crypto.randomUUID(),
@@ -146,12 +159,16 @@ export class DemoDataSeeder {
 
     const { error } = await supabase.from('documents').insert(documents);
     if (error) {
-      console.error('Failed to create demo documents:', error);
+      debug.error('Failed to create demo documents', error, 'DATA');
       throw new Error(`Demo documents creation failed: ${error.message}`);
     }
+    
+    debug.data('Demo documents created successfully', { count: documents.length });
   }
 
   private async createDemoAnalyses(userId: string): Promise<void> {
+    debug.data('Creating demo analyses', { userId });
+    
     const analyses = [
       {
         user_id: userId,
@@ -199,12 +216,16 @@ export class DemoDataSeeder {
 
     const { error } = await supabase.from('ai_analysis_results').insert(analyses);
     if (error) {
-      console.error('Failed to create demo analyses:', error);
+      debug.error('Failed to create demo analyses', error, 'DATA');
       throw new Error(`Demo analyses creation failed: ${error.message}`);
     }
+    
+    debug.data('Demo analyses created successfully', { count: analyses.length });
   }
 
   private async createDemoComplianceGaps(userId: string): Promise<void> {
+    debug.data('Creating demo compliance gaps', { userId });
+    
     const gaps = [
       {
         user_id: userId,
@@ -243,12 +264,16 @@ export class DemoDataSeeder {
 
     const { error } = await supabase.from('compliance_gaps').insert(gaps);
     if (error) {
-      console.error('Failed to create demo compliance gaps:', error);
+      debug.error('Failed to create demo compliance gaps', error, 'DATA');
       throw new Error(`Demo compliance gaps creation failed: ${error.message}`);
     }
+    
+    debug.data('Demo compliance gaps created successfully', { count: gaps.length });
   }
 
   private async createDemoRecommendations(userId: string): Promise<void> {
+    debug.data('Creating demo recommendations', { userId });
+    
     const recommendations = [
       {
         user_id: userId,
@@ -305,12 +330,16 @@ export class DemoDataSeeder {
 
     const { error } = await supabase.from('ai_recommendations').insert(recommendations);
     if (error) {
-      console.error('Failed to create demo recommendations:', error);
+      debug.error('Failed to create demo recommendations', error, 'DATA');
       throw new Error(`Demo recommendations creation failed: ${error.message}`);
     }
+    
+    debug.data('Demo recommendations created successfully', { count: recommendations.length });
   }
 
   async cleanupDemoUser(userId: string): Promise<void> {
+    debug.data('Starting demo user cleanup', { userId });
+    
     try {
       // Sign out the demo user
       await supabase.auth.signOut();
@@ -318,25 +347,27 @@ export class DemoDataSeeder {
       // Note: The database cleanup function will handle removing expired demo users
       // via the cleanup_expired_demo_users() function and cascading deletes
       
-      console.log('Demo user session ended:', userId);
+      debug.data('Demo user session ended', { userId });
     } catch (error) {
-      console.error('Failed to cleanup demo user:', error);
+      debug.error('Failed to cleanup demo user', error, 'DATA');
     }
   }
 
   async cleanupExpiredDemoUsers(): Promise<void> {
+    debug.data('Starting cleanup of expired demo users');
+    
     try {
       // This will be handled by the database function
       // We can call it if needed for manual cleanup
       const { error } = await supabase.rpc('cleanup_expired_demo_users');
       
       if (error) {
-        console.error('Failed to cleanup expired demo users:', error);
+        debug.error('Failed to cleanup expired demo users', error, 'DATA');
       } else {
-        console.log('Expired demo users cleaned up successfully');
+        debug.data('Expired demo users cleaned up successfully');
       }
     } catch (error) {
-      console.error('Failed to cleanup expired demo users:', error);
+      debug.error('Failed to cleanup expired demo users', error, 'DATA');
       throw error;
     }
   }
