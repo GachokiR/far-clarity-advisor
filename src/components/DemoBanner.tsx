@@ -4,12 +4,20 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { X, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDemoMode } from '@/hooks/useDemoMode';
+import { useDemoAuth } from '@/hooks/useDemoAuth';
+import { debug } from '@/utils/debug';
 
 export const DemoBanner = () => {
   const [isVisible, setIsVisible] = useState(true);
   const { isDemoMode, formattedTimeRemaining, endDemo } = useDemoMode();
+  const { isDemoUser } = useDemoAuth();
   
-  console.log('DemoBanner rendering', { isDemoMode, formattedTimeRemaining });
+  debug.demo('DemoBanner rendering', { 
+    isDemoMode, 
+    isDemoUser, 
+    formattedTimeRemaining,
+    isVisible 
+  });
 
   useEffect(() => {
     const dismissed = sessionStorage.getItem('demo-banner-dismissed');
@@ -19,17 +27,34 @@ export const DemoBanner = () => {
   }, []);
 
   const handleDismiss = () => {
-    console.log('Dismissing demo banner');
+    debug.demo('Dismissing demo banner');
     setIsVisible(false);
     sessionStorage.setItem('demo-banner-dismissed', 'true');
   };
 
-  if (!isDemoMode || !isVisible) {
-    console.log('Not showing banner - isDemoMode:', isDemoMode, 'isVisible:', isVisible);
+  const handleEndDemo = async () => {
+    debug.demo('Ending demo from banner');
+    try {
+      await endDemo();
+    } catch (error) {
+      debug.error('Error ending demo from banner', error);
+    }
+  };
+
+  // Show banner if either demo mode is active OR if we detect a demo user
+  const shouldShowBanner = (isDemoMode || isDemoUser) && isVisible;
+
+  if (!shouldShowBanner) {
+    debug.demo('Not showing banner', { 
+      isDemoMode, 
+      isDemoUser, 
+      isVisible,
+      shouldShowBanner 
+    });
     return null;
   }
 
-  console.log('Showing demo banner');
+  debug.demo('Showing demo banner');
   return (
     <Alert className="bg-amber-50 border-amber-200 text-amber-800 rounded-none border-x-0 border-t-0">
       <div className="flex items-center justify-between w-full">
@@ -49,7 +74,7 @@ export const DemoBanner = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={endDemo}
+            onClick={handleEndDemo}
             className="h-auto p-1 text-amber-600 hover:text-amber-800 hover:bg-amber-100"
           >
             Exit Demo

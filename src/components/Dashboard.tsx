@@ -1,17 +1,81 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload, BarChart3, Users, Shield, Brain, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TrialLimitsIndicator } from "@/components/TrialLimitsIndicator";
+import { DocumentUploadModal } from "@/components/DocumentUploadModal";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useToast } from "@/hooks/use-toast";
+import { debug } from "@/utils/debug";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
   const { restartOnboarding } = useOnboarding();
+  const { toast } = useToast();
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const handleUpgrade = () => {
-    // TODO: Implement upgrade flow
-    console.log('Upgrade clicked');
+    debug.log('Upgrade button clicked');
+    toast({
+      title: "Upgrade Feature",
+      description: "Upgrade functionality will be available soon.",
+    });
+  };
+
+  const handleRestartTour = () => {
+    debug.log('Restart tour button clicked');
+    try {
+      restartOnboarding();
+      toast({
+        title: "Tour Restarted",
+        description: "The onboarding tour has been restarted.",
+      });
+    } catch (error) {
+      debug.error('Error restarting tour', error);
+      toast({
+        title: "Tour Error",
+        description: "Unable to restart the tour. Please refresh the page and try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleUploadDocuments = () => {
+    debug.log('Upload documents button clicked');
+    setIsUploadModalOpen(true);
+  };
+
+  const handleViewAnalytics = () => {
+    debug.log('View analytics button clicked');
+    toast({
+      title: "Analytics",
+      description: "Analytics dashboard coming soon.",
+    });
+  };
+
+  const handleViewChecklists = () => {
+    debug.log('View checklists button clicked');
+    toast({
+      title: "Compliance Checklists",
+      description: "Compliance checklists feature coming soon.",
+    });
+  };
+
+  const handleViewRecommendations = () => {
+    debug.log('View recommendations button clicked');
+    toast({
+      title: "AI Recommendations",
+      description: "AI recommendations feature coming soon.",
+    });
+  };
+
+  const handleManageUsers = () => {
+    debug.log('Manage users button clicked');
+    toast({
+      title: "User Management",
+      description: "User management feature coming soon.",
+    });
   };
 
   return (
@@ -26,7 +90,7 @@ export const Dashboard = () => {
         
         <Button
           variant="outline"
-          onClick={restartOnboarding}
+          onClick={handleRestartTour}
           className="flex items-center space-x-2"
         >
           <HelpCircle className="h-4 w-4" />
@@ -53,7 +117,7 @@ export const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full">
+            <Button className="w-full" onClick={handleUploadDocuments}>
               Upload Documents
             </Button>
           </CardContent>
@@ -70,7 +134,7 @@ export const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleViewAnalytics}>
               View Analytics
             </Button>
           </CardContent>
@@ -87,7 +151,7 @@ export const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleViewChecklists}>
               View Checklists
             </Button>
           </CardContent>
@@ -104,7 +168,7 @@ export const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleViewRecommendations}>
               View Recommendations
             </Button>
           </CardContent>
@@ -142,7 +206,7 @@ export const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleManageUsers}>
               Manage Users
             </Button>
           </CardContent>
@@ -209,6 +273,12 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Document Upload Modal */}
+      <DocumentUploadModal 
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+      />
     </div>
   );
 };

@@ -6,10 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDemoAuth } from "@/hooks/useDemoAuth";
 import { Dashboard } from "@/components/Dashboard";
 import { DemoBanner } from "@/components/DemoBanner";
+import { AppHeader } from "@/components/AppHeader";
 import { Loader2 } from "lucide-react";
+import { debug } from "@/utils/debug";
 
 const Index = () => {
-  console.log('Index page rendering');
+  debug.log('Index page rendering');
   
   const { user, loading: authLoading } = useAuth();
   const { isDemoUser, demoSession } = useDemoAuth();
@@ -17,7 +19,7 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log('Index state:', { 
+  debug.log('Index state:', { 
     user: user?.email, 
     authLoading, 
     isDemoUser, 
@@ -25,19 +27,19 @@ const Index = () => {
   });
 
   useEffect(() => {
-    console.log('Index useEffect running');
+    debug.log('Index useEffect running');
     
     const checkAuth = async () => {
-      console.log('Checking auth state...');
+      debug.log('Checking auth state...');
       
       if (authLoading) {
-        console.log('Auth still loading, waiting...');
+        debug.log('Auth still loading, waiting...');
         return;
       }
 
       // Handle demo mode
       if (isDemoUser && demoSession) {
-        console.log('Demo user detected, setting up demo profile');
+        debug.log('Demo user detected, setting up demo profile');
         setUserProfile({
           id: demoSession.userId,
           company: "Time Defense Solutions",
@@ -50,7 +52,7 @@ const Index = () => {
 
       // Handle regular authenticated users
       if (user) {
-        console.log('Regular user detected, fetching profile for:', user.email);
+        debug.log('Regular user detected, fetching profile for:', user.email);
         try {
           const { data: profile, error } = await supabase
             .from('profiles')
@@ -59,20 +61,20 @@ const Index = () => {
             .maybeSingle();
           
           if (error) {
-            console.error('Error fetching profile:', error);
+            debug.error('Error fetching profile:', error);
           } else {
-            console.log('Profile fetched successfully:', profile);
+            debug.log('Profile fetched successfully:', profile);
             setUserProfile(profile);
           }
         } catch (error) {
-          console.error('Profile fetch exception:', error);
+          debug.error('Profile fetch exception:', error);
         }
         setLoading(false);
         return;
       }
 
       // No user and not in demo mode - redirect to auth
-      console.log('No user found, redirecting to auth');
+      debug.log('No user found, redirecting to auth');
       navigate("/auth");
     };
 
@@ -80,7 +82,7 @@ const Index = () => {
   }, [user, authLoading, navigate, isDemoUser, demoSession]);
 
   if (loading || authLoading) {
-    console.log('Showing loading state');
+    debug.log('Showing loading state');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -91,9 +93,11 @@ const Index = () => {
     );
   }
 
-  console.log('Rendering main content');
+  debug.log('Rendering main content', { isDemoUser, hasDemoSession: !!demoSession });
+  
   return (
     <div className="min-h-screen bg-gray-50">
+      <AppHeader />
       {isDemoUser && <DemoBanner />}
       <div className="container mx-auto px-4 py-8">
         <Dashboard />
