@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface DemoData {
@@ -16,47 +17,86 @@ export class DemoDataSeeder {
 
   async createDemoUser(): Promise<string> {
     const timestamp = Date.now();
-    const demoUserId = crypto.randomUUID();
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
+    const demoUserEmail = `demo-${timestamp}@demo.farclarity.app`;
+    const demoPassword = 'DemoPass123!';
 
     try {
-      console.log('Creating demo user with direct profile creation...');
+      console.log('Creating demo user with Supabase Auth...');
 
-      // Create demo user profile directly
+      // Step 1: Create auth user with proper signup
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: demoUserEmail,
+        password: demoPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            first_name: 'Demo',
+            last_name: 'User',
+            company: this.DEMO_COMPANY,
+            role: 'Contract Manager',
+            company_size: '11-50',
+            primary_agency: 'Department of Defense',
+            referral_source: 'Demo Mode'
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('Auth signup error:', authError);
+        throw new Error(`Demo user creation failed: ${authError.message}`);
+      }
+
+      if (!authData.user) {
+        throw new Error('No user data returned from signup');
+      }
+
+      const userId = authData.user.id;
+      console.log('Demo auth user created:', userId);
+
+      // Step 2: Sign in the demo user to establish session
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: demoUserEmail,
+        password: demoPassword
+      });
+
+      if (signInError) {
+        console.error('Demo user sign-in error:', signInError);
+        throw new Error(`Failed to sign in demo user: ${signInError.message}`);
+      }
+
+      console.log('Demo user signed in successfully');
+
+      // Step 3: Wait for profile creation trigger and update with demo settings
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: demoUserId,
-          email: `demo-${timestamp}@demo.internal`,
-          first_name: 'Demo',
-          last_name: 'User',
-          company: this.DEMO_COMPANY,
-          role: 'Contract Manager',
+        .update({
           is_demo_user: true,
           demo_session_expires_at: expiresAt.toISOString(),
-          subscription_tier: 'professional'
-        });
+          subscription_tier: 'professional',
+          company: this.DEMO_COMPANY,
+          role: 'Contract Manager'
+        })
+        .eq('id', userId);
 
       if (profileError) {
-        console.error('Failed to create demo profile:', profileError);
-        throw new Error(`Demo profile creation failed: ${profileError.message}`);
+        console.error('Failed to update demo profile:', profileError);
+        // Continue anyway as this is not critical
       }
 
-      // Create demo data with error handling
-      try {
-        await this.seedDemoData(demoUserId);
-      } catch (seedError) {
-        console.error('Demo data seeding failed, cleaning up:', seedError);
-        await this.cleanupDemoUser(demoUserId);
-        throw new Error('Demo data seeding failed');
-      }
+      // Step 4: Seed demo data
+      await this.seedDemoData(userId);
       
-      console.log('Demo user created successfully:', demoUserId);
-      return demoUserId;
+      console.log('Demo user created successfully:', userId);
+      return userId;
     } catch (error) {
       console.error('Demo user creation failed:', error);
-      await this.cleanupDemoUser(demoUserId);
+      // Clean up on failure
+      await supabase.auth.signOut();
       throw error;
     }
   }
@@ -272,17 +312,13 @@ export class DemoDataSeeder {
 
   async cleanupDemoUser(userId: string): Promise<void> {
     try {
-      // Delete in reverse order to handle any foreign key constraints
-      await Promise.all([
-        supabase.from('ai_recommendations').delete().eq('user_id', userId),
-        supabase.from('compliance_gaps').delete().eq('user_id', userId),
-        supabase.from('ai_analysis_results').delete().eq('user_id', userId),
-        supabase.from('documents').delete().eq('user_id', userId)
-      ]);
+      // Sign out the demo user
+      await supabase.auth.signOut();
       
-      await supabase.from('profiles').delete().eq('id', userId);
+      // Note: The database cleanup function will handle removing expired demo users
+      // via the cleanup_expired_demo_users() function and cascading deletes
       
-      console.log('Cleaned up demo user:', userId);
+      console.log('Demo user session ended:', userId);
     } catch (error) {
       console.error('Failed to cleanup demo user:', error);
     }
@@ -290,21 +326,14 @@ export class DemoDataSeeder {
 
   async cleanupExpiredDemoUsers(): Promise<void> {
     try {
-      // Get expired demo users
-      const { data: expiredUsers, error: fetchError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('is_demo_user', true)
-        .lt('demo_session_expires_at', new Date().toISOString());
-
-      if (fetchError) throw fetchError;
-
-      if (expiredUsers && expiredUsers.length > 0) {
-        // Cleanup each expired demo user
-        await Promise.all(
-          expiredUsers.map(user => this.cleanupDemoUser(user.id))
-        );
-        console.log(`Cleaned up ${expiredUsers.length} expired demo users`);
+      // This will be handled by the database function
+      // We can call it if needed for manual cleanup
+      const { error } = await supabase.rpc('cleanup_expired_demo_users');
+      
+      if (error) {
+        console.error('Failed to cleanup expired demo users:', error);
+      } else {
+        console.log('Expired demo users cleaned up successfully');
       }
     } catch (error) {
       console.error('Failed to cleanup expired demo users:', error);
