@@ -20,35 +20,19 @@ interface DocumentUploadModalProps {
 
 export const DocumentUploadModal = ({ isOpen, onClose }: DocumentUploadModalProps) => {
   const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
 
-  const handleUploadComplete = (files: File[]) => {
-    debug.log('Documents uploaded successfully', { count: files.length });
+  const handleAnalysisComplete = (results: any) => {
+    debug.log('Document analysis completed', results);
     toast({
-      title: "Upload Complete",
-      description: `${files.length} document(s) uploaded successfully.`
+      title: "Analysis Complete",
+      description: `Successfully analyzed ${results.documentsAnalyzed || 0} document(s) and detected ${results.farClausesDetected?.length || 0} FAR clauses.`
     });
-    setIsUploading(false);
     onClose();
-  };
-
-  const handleUploadError = (error: string) => {
-    debug.error('Document upload error', error);
-    toast({
-      title: "Upload Error",
-      description: error,
-      variant: "destructive"
-    });
-    setIsUploading(false);
-  };
-
-  const handleUploadStart = () => {
-    setIsUploading(true);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Upload className="h-5 w-5" />
@@ -60,18 +44,11 @@ export const DocumentUploadModal = ({ isOpen, onClose }: DocumentUploadModalProp
         </DialogHeader>
 
         <div className="py-4">
-          <FileUpload
-            onUploadComplete={handleUploadComplete}
-            onUploadError={handleUploadError}
-            onUploadStart={handleUploadStart}
-            maxFiles={10}
-            acceptedFileTypes={['.pdf', '.doc', '.docx']}
-            disabled={isUploading}
-          />
+          <FileUpload onAnalysisComplete={handleAnalysisComplete} />
         </div>
 
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose} disabled={isUploading}>
+          <Button variant="outline" onClick={onClose}>
             <X className="h-4 w-4 mr-2" />
             Close
           </Button>
