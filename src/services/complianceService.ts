@@ -1,6 +1,5 @@
-
-import { supabase } from '@/lib/supabase';
-import { ComplianceChecklist } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { ComplianceChecklist } from '@/integrations/supabase/types';
 
 export const saveComplianceChecklist = async (
   farClause: string,

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Search, DollarSign, Clock, FileText, CheckCircle } from "lucide-react";
-import { ComplianceChecklist } from "@/lib/supabase";
+import { ComplianceChecklist } from "@/integrations/supabase/types";
 
 interface ComplianceChecklistsTabProps {
   checklists: ComplianceChecklist[];

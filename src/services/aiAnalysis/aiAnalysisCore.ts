@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { validateDocumentContent, validateDocumentName } from '@/utils/inputValidation';
 import { aiAnalysisRateLimiter } from '@/utils/rateLimiting';
 import { sanitizeError, handleApiError } from '@/utils/errorSanitizer';
