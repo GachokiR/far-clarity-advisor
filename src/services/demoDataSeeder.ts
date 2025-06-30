@@ -1,5 +1,5 @@
+
 import { supabase } from '@/lib/supabase';
-import { createClient } from '@supabase/supabase-js';
 
 export interface DemoData {
   userId: string;
@@ -14,26 +14,6 @@ export interface DemoData {
 export class DemoDataSeeder {
   private readonly DEMO_COMPANY = "Time Defense Solutions";
   private readonly DEMO_SESSION_MINUTES = 30;
-  private adminClient: any;
-
-  constructor() {
-    // Create admin client with service role key for demo user management
-    try {
-      this.adminClient = createClient(
-        "https://qbrncgvscyyvatdgfidt.supabase.co",
-        process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false
-          }
-        }
-      );
-    } catch (error) {
-      console.warn('Admin client not available, falling back to regular client');
-      this.adminClient = null;
-    }
-  }
 
   async createDemoUser(): Promise<string> {
     const timestamp = Date.now();
@@ -42,9 +22,9 @@ export class DemoDataSeeder {
     expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
 
     try {
-      console.log('Creating demo user with fallback approach...');
+      console.log('Creating demo user with direct profile creation...');
 
-      // Create demo user profile directly (simplified approach)
+      // Create demo user profile directly without foreign key constraint
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
