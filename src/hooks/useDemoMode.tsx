@@ -76,7 +76,17 @@ export const useDemoMode = () => {
     } catch (error: any) {
       console.error('Failed to start demo:', error);
       
-      const errorMessage = error?.message || 'Failed to start demo mode';
+      let errorMessage = 'Failed to start demo mode';
+      
+      // Handle specific error types
+      if (error?.message?.includes('foreign key')) {
+        errorMessage = 'Demo setup error - please try again in a moment';
+      } else if (error?.message?.includes('auth')) {
+        errorMessage = 'Authentication setup failed - please try again';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       setError(errorMessage);
       
       toast({

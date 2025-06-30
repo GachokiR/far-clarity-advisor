@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 
 export interface DemoData {
@@ -16,17 +15,37 @@ export class DemoDataSeeder {
   private readonly DEMO_SESSION_MINUTES = 30;
 
   async createDemoUser(): Promise<string> {
-    const demoUserId = crypto.randomUUID();
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
-
+    const timestamp = Date.now();
+    const demoEmail = `demo-${timestamp}@demo.internal`;
+    const demoPassword = crypto.randomUUID(); // Temporary password
+    
     try {
-      // Create demo user profile with proper error handling
+      // Create actual Supabase Auth user for demo
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: demoEmail,
+        password: demoPassword,
+        email_confirm: true, // Skip email confirmation for demo users
+        user_metadata: {
+          is_demo_user: true,
+          demo_session_created: new Date().toISOString()
+        }
+      });
+
+      if (authError || !authData.user) {
+        console.error('Failed to create demo auth user:', authError);
+        throw new Error(`Demo auth user creation failed: ${authError?.message || 'Unknown error'}`);
+      }
+
+      const demoUserId = authData.user.id;
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
+
+      // Create demo user profile
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: demoUserId,
-          email: `demo-${demoUserId.substring(0, 8)}@demo.com`,
+          email: demoEmail,
           first_name: 'Demo',
           last_name: 'User',
           company: this.DEMO_COMPANY,
@@ -38,6 +57,8 @@ export class DemoDataSeeder {
 
       if (profileError) {
         console.error('Failed to create demo profile:', profileError);
+        // Cleanup auth user if profile creation fails
+        await this.cleanupDemoAuthUser(demoUserId);
         throw new Error(`Demo profile creation failed: ${profileError.message}`);
       }
 
@@ -48,8 +69,6 @@ export class DemoDataSeeder {
       return demoUserId;
     } catch (error) {
       console.error('Demo user creation failed:', error);
-      // Cleanup on failure
-      await this.cleanupDemoUser(demoUserId);
       throw error;
     }
   }
@@ -280,17 +299,45 @@ export class DemoDataSeeder {
       ]);
       
       await supabase.from('profiles').delete().eq('id', userId);
+      
+      // Also cleanup the auth user
+      await this.cleanupDemoAuthUser(userId);
+      
       console.log('Cleaned up demo user:', userId);
     } catch (error) {
       console.error('Failed to cleanup demo user:', error);
     }
   }
 
+  private async cleanupDemoAuthUser(userId: string): Promise<void> {
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      if (error) {
+        console.error('Failed to delete demo auth user:', error);
+      }
+    } catch (error) {
+      console.error('Error cleaning up demo auth user:', error);
+    }
+  }
+
   async cleanupExpiredDemoUsers(): Promise<void> {
     try {
-      const { error } = await supabase.rpc('cleanup_expired_demo_users');
-      if (error) throw error;
-      console.log('Expired demo users cleaned up successfully');
+      // Get expired demo users
+      const { data: expiredUsers, error: fetchError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('is_demo_user', true)
+        .lt('demo_session_expires_at', new Date().toISOString());
+
+      if (fetchError) throw fetchError;
+
+      if (expiredUsers && expiredUsers.length > 0) {
+        // Cleanup each expired demo user
+        await Promise.all(
+          expiredUsers.map(user => this.cleanupDemoUser(user.id))
+        );
+        console.log(`Cleaned up ${expiredUsers.length} expired demo users`);
+      }
     } catch (error) {
       console.error('Failed to cleanup expired demo users:', error);
       throw error;
