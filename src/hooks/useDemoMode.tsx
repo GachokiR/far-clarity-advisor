@@ -12,6 +12,7 @@ interface DemoSession {
 export const useDemoMode = () => {
   const [demoSession, setDemoSession] = useState<DemoSession | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -27,16 +28,31 @@ export const useDemoMode = () => {
           setDemoSession(session);
         } else {
           sessionStorage.removeItem('demo-session');
+          toast({
+            title: "Demo Session Expired",
+            description: "Your demo session has expired. Please start a new one.",
+            variant: "destructive"
+          });
         }
       } catch (error) {
+        console.error('Invalid demo session data:', error);
         sessionStorage.removeItem('demo-session');
       }
     }
-  }, []);
+  }, [toast]);
 
   const startDemo = useCallback(async () => {
     setLoading(true);
+    setError(null);
+    
     try {
+      console.log('Starting demo mode...');
+      
+      // Validate environment
+      if (!crypto?.randomUUID) {
+        throw new Error('Browser does not support required features for demo mode');
+      }
+
       const userId = await demoDataSeeder.createDemoUser();
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 30);
@@ -55,14 +71,20 @@ export const useDemoMode = () => {
         description: "Explore Far V.02 with pre-loaded sample data. Your session will last 30 minutes.",
       });
 
+      console.log('Demo mode started successfully:', userId);
       return session;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to start demo:', error);
+      
+      const errorMessage = error?.message || 'Failed to start demo mode';
+      setError(errorMessage);
+      
       toast({
-        title: "Demo Error",
-        description: "Failed to start demo mode. Please try again.",
+        title: "Demo Mode Error",
+        description: errorMessage + ". Please try again.",
         variant: "destructive"
       });
+      
       throw error;
     } finally {
       setLoading(false);
@@ -70,10 +92,17 @@ export const useDemoMode = () => {
   }, [toast]);
 
   const endDemo = useCallback(() => {
+    console.log('Ending demo mode...');
     setDemoSession(null);
+    setError(null);
     sessionStorage.removeItem('demo-session');
     sessionStorage.removeItem('demo-banner-dismissed');
-  }, []);
+    
+    toast({
+      title: "Demo Session Ended",
+      description: "You've exited demo mode.",
+    });
+  }, [toast]);
 
   const isDemoMode = !!demoSession?.isActive;
 
@@ -81,6 +110,7 @@ export const useDemoMode = () => {
     demoSession,
     isDemoMode,
     loading,
+    error,
     startDemo,
     endDemo
   };

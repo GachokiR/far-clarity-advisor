@@ -20,34 +20,53 @@ export class DemoDataSeeder {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
 
-    // Create demo user profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: demoUserId,
-        email: `demo-${demoUserId.substring(0, 8)}@demo.com`,
-        first_name: 'Demo',
-        last_name: 'User',
-        company: this.DEMO_COMPANY,
-        role: 'Contract Manager',
-        is_demo_user: true,
-        demo_session_expires_at: expiresAt.toISOString(),
-        subscription_tier: 'professional' // Give demo users full access
-      });
+    try {
+      // Create demo user profile with proper error handling
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: demoUserId,
+          email: `demo-${demoUserId.substring(0, 8)}@demo.com`,
+          first_name: 'Demo',
+          last_name: 'User',
+          company: this.DEMO_COMPANY,
+          role: 'Contract Manager',
+          is_demo_user: true,
+          demo_session_expires_at: expiresAt.toISOString(),
+          subscription_tier: 'professional' // Give demo users full access
+        });
 
-    if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Failed to create demo profile:', profileError);
+        throw new Error(`Demo profile creation failed: ${profileError.message}`);
+      }
 
-    await this.seedDemoData(demoUserId);
-    return demoUserId;
+      // Create demo data with rollback capability
+      await this.seedDemoDataWithRollback(demoUserId);
+      
+      console.log('Demo user created successfully:', demoUserId);
+      return demoUserId;
+    } catch (error) {
+      console.error('Demo user creation failed:', error);
+      // Cleanup on failure
+      await this.cleanupDemoUser(demoUserId);
+      throw error;
+    }
   }
 
-  private async seedDemoData(userId: string): Promise<void> {
-    await Promise.all([
-      this.createDemoDocuments(userId),
-      this.createDemoAnalyses(userId),
-      this.createDemoComplianceGaps(userId),
-      this.createDemoRecommendations(userId)
-    ]);
+  private async seedDemoDataWithRollback(userId: string): Promise<void> {
+    try {
+      await Promise.all([
+        this.createDemoDocuments(userId),
+        this.createDemoAnalyses(userId),
+        this.createDemoComplianceGaps(userId),
+        this.createDemoRecommendations(userId)
+      ]);
+    } catch (error) {
+      console.error('Failed to seed demo data, rolling back:', error);
+      await this.cleanupDemoUser(userId);
+      throw new Error('Demo data seeding failed');
+    }
   }
 
   private async createDemoDocuments(userId: string): Promise<void> {
@@ -60,7 +79,7 @@ export class DemoDataSeeder {
         file_type: 'application/pdf',
         storage_path: 'demo/contracts/it-support.pdf',
         upload_status: 'completed',
-        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days ago
+        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       },
       {
         id: crypto.randomUUID(),
@@ -70,7 +89,7 @@ export class DemoDataSeeder {
         file_type: 'application/pdf',
         storage_path: 'demo/contracts/cybersecurity-rfp.pdf',
         upload_status: 'completed',
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days ago
+        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
       },
       {
         id: crypto.randomUUID(),
@@ -80,12 +99,15 @@ export class DemoDataSeeder {
         file_type: 'application/pdf',
         storage_path: 'demo/contracts/defense-systems.pdf',
         upload_status: 'completed',
-        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
+        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
       }
     ];
 
     const { error } = await supabase.from('documents').insert(documents);
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create demo documents:', error);
+      throw new Error(`Demo documents creation failed: ${error.message}`);
+    }
   }
 
   private async createDemoAnalyses(userId: string): Promise<void> {
@@ -135,7 +157,10 @@ export class DemoDataSeeder {
     ];
 
     const { error } = await supabase.from('ai_analysis_results').insert(analyses);
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create demo analyses:', error);
+      throw new Error(`Demo analyses creation failed: ${error.message}`);
+    }
   }
 
   private async createDemoComplianceGaps(userId: string): Promise<void> {
@@ -176,7 +201,10 @@ export class DemoDataSeeder {
     ];
 
     const { error } = await supabase.from('compliance_gaps').insert(gaps);
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create demo compliance gaps:', error);
+      throw new Error(`Demo compliance gaps creation failed: ${error.message}`);
+    }
   }
 
   private async createDemoRecommendations(userId: string): Promise<void> {
@@ -191,7 +219,7 @@ export class DemoDataSeeder {
         estimated_effort: 'high',
         status: 'pending',
         auto_generated: true,
-        due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days from now
+        due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         metadata: {
           category: 'cybersecurity',
           urgency: 'critical',
@@ -208,7 +236,7 @@ export class DemoDataSeeder {
         estimated_effort: 'low',
         status: 'pending',
         auto_generated: true,
-        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         metadata: {
           category: 'contract_amendment',
           urgency: 'normal',
@@ -225,7 +253,7 @@ export class DemoDataSeeder {
         estimated_effort: 'low',
         status: 'pending',
         auto_generated: true,
-        due_date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(), // 21 days from now
+        due_date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
         metadata: {
           category: 'administrative',
           urgency: 'low',
@@ -235,12 +263,38 @@ export class DemoDataSeeder {
     ];
 
     const { error } = await supabase.from('ai_recommendations').insert(recommendations);
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create demo recommendations:', error);
+      throw new Error(`Demo recommendations creation failed: ${error.message}`);
+    }
+  }
+
+  private async cleanupDemoUser(userId: string): Promise<void> {
+    try {
+      // Delete in reverse order to handle any foreign key constraints
+      await Promise.all([
+        supabase.from('ai_recommendations').delete().eq('user_id', userId),
+        supabase.from('compliance_gaps').delete().eq('user_id', userId),
+        supabase.from('ai_analysis_results').delete().eq('user_id', userId),
+        supabase.from('documents').delete().eq('user_id', userId)
+      ]);
+      
+      await supabase.from('profiles').delete().eq('id', userId);
+      console.log('Cleaned up demo user:', userId);
+    } catch (error) {
+      console.error('Failed to cleanup demo user:', error);
+    }
   }
 
   async cleanupExpiredDemoUsers(): Promise<void> {
-    const { error } = await supabase.rpc('cleanup_expired_demo_users');
-    if (error) throw error;
+    try {
+      const { error } = await supabase.rpc('cleanup_expired_demo_users');
+      if (error) throw error;
+      console.log('Expired demo users cleaned up successfully');
+    } catch (error) {
+      console.error('Failed to cleanup expired demo users:', error);
+      throw error;
+    }
   }
 }
 
