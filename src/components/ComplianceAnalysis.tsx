@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, Shield, Download, FileText } from "lucide-react";
-import { ComplianceChecklist } from "@/lib/supabase";
+import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { AIRecommendations } from "./AIRecommendations";
 import { ComplianceGaps } from "./ComplianceGaps";
@@ -17,6 +16,9 @@ import { ComplianceAnalysisLoading } from "./SecurityLoadingStates";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { pdfReportService } from "@/utils/pdfReportService";
 import { wordReportService } from "@/utils/wordReportService";
+
+// Type alias for better readability
+type ComplianceChecklist = Tables<'compliance_checklists'>;
 
 interface ComplianceAnalysisProps {
   analysisResults?: any;

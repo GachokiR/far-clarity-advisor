@@ -1,12 +1,16 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { ComplianceChecklist } from '@/integrations/supabase/types';
+import { Tables } from '@/integrations/supabase/types';
+
+// Type alias for better readability
+type ComplianceChecklist = Tables<'compliance_checklists'>;
 
 export const saveComplianceChecklist = async (
   farClause: string,
   requirements: string[],
   estimatedCost: string,
   timeframe: string
-) => {
+): Promise<ComplianceChecklist> => {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -30,7 +34,7 @@ export const saveComplianceChecklist = async (
   return data;
 };
 
-export const getComplianceChecklists = async () => {
+export const getComplianceChecklists = async (): Promise<ComplianceChecklist[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -44,13 +48,13 @@ export const getComplianceChecklists = async () => {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data || [];
 };
 
 export const updateComplianceStatus = async (
   id: string,
   status: 'pending' | 'in_progress' | 'completed'
-) => {
+): Promise<ComplianceChecklist> => {
   const { data, error } = await supabase
     .from('compliance_checklists')
     .update({ status })

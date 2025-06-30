@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Search, DollarSign, Clock, FileText, CheckCircle } from "lucide-react";
-import { ComplianceChecklist } from "@/integrations/supabase/types";
+import { Tables } from "@/integrations/supabase/types";
+
+// Type alias for better readability
+type ComplianceChecklist = Tables<'compliance_checklists'>;
 
 interface ComplianceChecklistsTabProps {
   checklists: ComplianceChecklist[];

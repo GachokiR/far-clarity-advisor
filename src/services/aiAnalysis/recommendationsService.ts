@@ -2,6 +2,18 @@
 import { supabase } from '@/integrations/supabase/client';
 import { handleApiError } from '@/utils/errorSanitizer';
 import { AIRecommendation } from '@/types/aiAnalysis';
+import { Tables } from '@/integrations/supabase/types';
+
+// Type adapter to convert database row to AI type
+const adaptAIRecommendation = (dbRow: Tables<'ai_recommendations'>): AIRecommendation => {
+  return {
+    ...dbRow,
+    recommendation_type: dbRow.recommendation_type as 'action_item' | 'risk_mitigation' | 'compliance_step',
+    priority: dbRow.priority as 'low' | 'medium' | 'high' | 'critical',
+    status: dbRow.status as 'pending' | 'in_progress' | 'completed' | 'dismissed',
+    estimated_effort: dbRow.estimated_effort as 'low' | 'medium' | 'high' | undefined
+  };
+};
 
 export const getAIRecommendations = async (analysisId?: string): Promise<AIRecommendation[]> => {
   try {
@@ -23,7 +35,7 @@ export const getAIRecommendations = async (analysisId?: string): Promise<AIRecom
     const { data, error } = await query.order('priority', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(adaptAIRecommendation);
   } catch (error: any) {
     throw handleApiError(error, 'getAIRecommendations');
   }
@@ -42,7 +54,7 @@ export const updateRecommendationStatus = async (
       .single();
 
     if (error) throw error;
-    return data;
+    return adaptAIRecommendation(data);
   } catch (error: any) {
     throw handleApiError(error, 'updateRecommendationStatus');
   }

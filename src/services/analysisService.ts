@@ -1,12 +1,16 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { AnalysisResult } from '@/integrations/supabase/types';
+import { Tables } from '@/integrations/supabase/types';
+
+// Type alias for better readability
+type AnalysisResult = Tables<'analysis_results'>;
 
 export const saveAnalysisResult = async (
   documentName: string,
   analysisData: any,
   riskLevel: 'low' | 'medium' | 'high',
   documentUrl?: string
-) => {
+): Promise<AnalysisResult> => {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -29,7 +33,7 @@ export const saveAnalysisResult = async (
   return data;
 };
 
-export const getAnalysisResults = async () => {
+export const getAnalysisResults = async (): Promise<AnalysisResult[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -43,5 +47,5 @@ export const getAnalysisResults = async () => {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data || [];
 };
