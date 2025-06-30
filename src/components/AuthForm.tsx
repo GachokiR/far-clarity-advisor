@@ -14,6 +14,8 @@ import { logAuthAttempt } from "@/utils/securityLogger";
 import { sanitizeError } from "@/utils/errorSanitizer";
 import { logger } from "@/utils/productionLogger";
 import { EnhancedSignupForm, SignupFormData } from "@/components/EnhancedSignupForm";
+import { DemoModeButton } from "@/components/DemoModeButton";
+import { useDemoAuth } from "@/hooks/useDemoAuth";
 
 interface AuthFormProps {
   isLogin: boolean;
@@ -26,6 +28,7 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   const [error, setError] = useState("");
   
   const { signIn, signUp } = useAuth();
+  const { startDemoMode } = useDemoAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -107,45 +110,60 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
     }
   };
 
+  const handleStartDemo = async () => {
+    setLoading(true);
+    try {
+      await startDemoMode();
+    } catch (error) {
+      // Error handling is done in useDemoAuth
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (isLogin) {
     return (
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
-        </div>
-        
-        {error && (
-          <div className="flex items-center space-x-2 text-red-600 text-sm">
-            <AlertCircle className="h-4 w-4" />
-            <span>{error}</span>
+      <div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
           </div>
-        )}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+          
+          {error && (
+            <div className="flex items-center space-x-2 text-red-600 text-sm">
+              <AlertCircle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Signing In..." : "Sign In"}
-        </Button>
-      </form>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Signing In..." : "Sign In"}
+          </Button>
+        </form>
+
+        <DemoModeButton onStartDemo={handleStartDemo} loading={loading} />
+      </div>
     );
   }
 

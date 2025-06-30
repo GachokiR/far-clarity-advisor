@@ -292,9 +292,11 @@ export type Database = {
         Row: {
           company: string | null
           created_at: string
+          demo_session_expires_at: string | null
           email: string | null
           first_name: string | null
           id: string
+          is_demo_user: boolean
           last_name: string | null
           role: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
@@ -307,9 +309,11 @@ export type Database = {
         Insert: {
           company?: string | null
           created_at?: string
+          demo_session_expires_at?: string | null
           email?: string | null
           first_name?: string | null
           id: string
+          is_demo_user?: boolean
           last_name?: string | null
           role?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
@@ -322,9 +326,11 @@ export type Database = {
         Update: {
           company?: string | null
           created_at?: string
+          demo_session_expires_at?: string | null
           email?: string | null
           first_name?: string | null
           id?: string
+          is_demo_user?: boolean
           last_name?: string | null
           role?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
@@ -341,6 +347,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_demo_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_tier_limits: {
         Args: { tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: Json
