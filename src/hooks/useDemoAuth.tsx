@@ -21,7 +21,7 @@ export const DemoAuthProvider = ({ children }: { children: React.ReactNode }) =>
   // Use try-catch to handle potential hook errors
   let demoSession = null;
   let isDemoMode = false;
-  let startDemo = async () => {};
+  let startDemo: () => Promise<any> = async () => null;
   let endDemo = () => {};
   
   try {
