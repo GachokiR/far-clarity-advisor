@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { demoDataSeeder } from '@/services/demoDataSeeder';
 import { useToast } from '@/hooks/use-toast';
 
@@ -11,6 +12,7 @@ interface DemoSession {
 }
 
 export const useDemoMode = () => {
+  const navigate = useNavigate();
   const [demoSession, setDemoSession] = useState<DemoSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +43,9 @@ export const useDemoMode = () => {
       description: "Your 30-minute demo session has ended. Start a new demo to continue exploring.",
       variant: "destructive"
     });
-  }, [toast]);
+
+    navigate('/auth');
+  }, [toast, navigate]);
 
   const setupExpiryTimer = useCallback((session: DemoSession) => {
     const now = new Date();
@@ -100,7 +104,7 @@ export const useDemoMode = () => {
         }
       };
     }
-  }, [demoSession, timeRemaining, handleExpiredSession]);
+  }, [demoSession, handleExpiredSession]);
 
   const startDemo = useCallback(async () => {
     setLoading(true);
@@ -138,6 +142,11 @@ export const useDemoMode = () => {
       });
 
       console.log('Demo mode started successfully:', userId);
+      
+      // Add small delay to ensure state is updated before navigation
+      await new Promise(resolve => setTimeout(resolve, 100));
+      navigate('/');
+      
       return session;
     } catch (error: any) {
       console.error('Failed to start demo:', error);
@@ -167,7 +176,7 @@ export const useDemoMode = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast, setupExpiryTimer]);
+  }, [toast, setupExpiryTimer, navigate]);
 
   const endDemo = useCallback(async () => {
     console.log('Ending demo mode...');
@@ -200,7 +209,9 @@ export const useDemoMode = () => {
       title: "Demo Session Ended",
       description: "You've exited demo mode.",
     });
-  }, [demoSession, toast]);
+
+    navigate('/auth');
+  }, [demoSession, toast, navigate]);
 
   // Cleanup on unmount
   useEffect(() => {
