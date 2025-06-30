@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export interface DemoData {
   userId: string;
@@ -13,39 +14,42 @@ export interface DemoData {
 export class DemoDataSeeder {
   private readonly DEMO_COMPANY = "Time Defense Solutions";
   private readonly DEMO_SESSION_MINUTES = 30;
+  private adminClient: any;
+
+  constructor() {
+    // Create admin client with service role key for demo user management
+    try {
+      this.adminClient = createClient(
+        "https://qbrncgvscyyvatdgfidt.supabase.co",
+        process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      );
+    } catch (error) {
+      console.warn('Admin client not available, falling back to regular client');
+      this.adminClient = null;
+    }
+  }
 
   async createDemoUser(): Promise<string> {
     const timestamp = Date.now();
-    const demoEmail = `demo-${timestamp}@demo.internal`;
-    const demoPassword = crypto.randomUUID(); // Temporary password
-    
+    const demoUserId = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
+
     try {
-      // Create actual Supabase Auth user for demo
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: demoEmail,
-        password: demoPassword,
-        email_confirm: true, // Skip email confirmation for demo users
-        user_metadata: {
-          is_demo_user: true,
-          demo_session_created: new Date().toISOString()
-        }
-      });
+      console.log('Creating demo user with fallback approach...');
 
-      if (authError || !authData.user) {
-        console.error('Failed to create demo auth user:', authError);
-        throw new Error(`Demo auth user creation failed: ${authError?.message || 'Unknown error'}`);
-      }
-
-      const demoUserId = authData.user.id;
-      const expiresAt = new Date();
-      expiresAt.setMinutes(expiresAt.getMinutes() + this.DEMO_SESSION_MINUTES);
-
-      // Create demo user profile
+      // Create demo user profile directly (simplified approach)
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: demoUserId,
-          email: demoEmail,
+          email: `demo-${timestamp}@demo.internal`,
           first_name: 'Demo',
           last_name: 'User',
           company: this.DEMO_COMPANY,
@@ -57,8 +61,6 @@ export class DemoDataSeeder {
 
       if (profileError) {
         console.error('Failed to create demo profile:', profileError);
-        // Cleanup auth user if profile creation fails
-        await this.cleanupDemoAuthUser(demoUserId);
         throw new Error(`Demo profile creation failed: ${profileError.message}`);
       }
 
@@ -69,6 +71,8 @@ export class DemoDataSeeder {
       return demoUserId;
     } catch (error) {
       console.error('Demo user creation failed:', error);
+      // Cleanup on failure
+      await this.cleanupDemoUser(demoUserId);
       throw error;
     }
   }
@@ -300,23 +304,9 @@ export class DemoDataSeeder {
       
       await supabase.from('profiles').delete().eq('id', userId);
       
-      // Also cleanup the auth user
-      await this.cleanupDemoAuthUser(userId);
-      
       console.log('Cleaned up demo user:', userId);
     } catch (error) {
       console.error('Failed to cleanup demo user:', error);
-    }
-  }
-
-  private async cleanupDemoAuthUser(userId: string): Promise<void> {
-    try {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      if (error) {
-        console.error('Failed to delete demo auth user:', error);
-      }
-    } catch (error) {
-      console.error('Error cleaning up demo auth user:', error);
     }
   }
 

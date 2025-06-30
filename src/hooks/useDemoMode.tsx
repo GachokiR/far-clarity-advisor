@@ -79,7 +79,9 @@ export const useDemoMode = () => {
       let errorMessage = 'Failed to start demo mode';
       
       // Handle specific error types
-      if (error?.message?.includes('foreign key')) {
+      if (error?.message?.includes('violates row-level security')) {
+        errorMessage = 'Demo setup error - authentication required';
+      } else if (error?.message?.includes('foreign key')) {
         errorMessage = 'Demo setup error - please try again in a moment';
       } else if (error?.message?.includes('auth')) {
         errorMessage = 'Authentication setup failed - please try again';
