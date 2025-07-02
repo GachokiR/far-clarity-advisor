@@ -13,7 +13,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoAuth } from '@/hooks/useDemoAuth';
 import { useDemoMode } from '@/hooks/useDemoMode';
-import { User, LogOut, Settings, TestTube } from 'lucide-react';
+import { useTour } from '@/components/tour/TourProvider';
+import { User, LogOut, Settings, TestTube, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { debug } from '@/utils/debug';
 
@@ -21,6 +22,7 @@ export const UserMenu = () => {
   const { user, signOut } = useAuth();
   const { isDemoUser } = useDemoAuth();
   const { endDemo, formattedTimeRemaining } = useDemoMode();
+  const { restartTour } = useTour();
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -108,6 +110,11 @@ export const UserMenu = () => {
         <DropdownMenuItem className="cursor-pointer">
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem className="cursor-pointer" onClick={restartTour}>
+          <HelpCircle className="mr-2 h-4 w-4" />
+          <span>Restart Tour</span>
         </DropdownMenuItem>
         
         <DropdownMenuSeparator />

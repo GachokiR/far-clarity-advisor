@@ -8,9 +8,10 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { DemoAuthProvider } from "@/hooks/useDemoAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { TourProvider } from "@/components/tour/TourProvider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Security from "./pages/Security";
+import { SecurityDashboard } from "./pages/admin/SecurityDashboard";
 import Analysis from "./pages/Analysis";
 import Documents from "./pages/Documents";
 import Compliance from "./pages/Compliance";
@@ -48,16 +49,18 @@ const App = () => {
               <Sonner />
               <ConnectionStatus />
               <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/documents" element={<Documents />} />
-                  <Route path="/analysis" element={<Analysis />} />
-                  <Route path="/compliance" element={<Compliance />} />
-                  <Route path="/security" element={<Security />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <TourProvider>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/documents" element={<Documents />} />
+                    <Route path="/analysis" element={<Analysis />} />
+                    <Route path="/compliance" element={<Compliance />} />
+                    <Route path="/admin/security" element={<SecurityDashboard />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </TourProvider>
               </BrowserRouter>
             </TooltipProvider>
           </DemoAuthProvider>

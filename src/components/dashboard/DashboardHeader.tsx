@@ -1,11 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { HelpCircle } from "lucide-react";
-
-interface DashboardHeaderProps {
-  onRestartTour: () => void;
-}
-
-export const DashboardHeader = ({ onRestartTour }: DashboardHeaderProps) => {
+export const DashboardHeader = () => {
   return (
     <div className="flex justify-between items-center">
       <div>
@@ -13,17 +6,6 @@ export const DashboardHeader = ({ onRestartTour }: DashboardHeaderProps) => {
         <p className="text-muted-foreground">
           FAR Compliance Management Platform
         </p>
-      </div>
-      
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="outline"
-          onClick={onRestartTour}
-          className="flex items-center space-x-2"
-        >
-          <HelpCircle className="h-4 w-4" />
-          <span>Restart Tour</span>
-        </Button>
       </div>
     </div>
   );

@@ -4,12 +4,10 @@ import { DocumentUploadModal } from "@/components/DocumentUploadModal";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardFeatureCards } from "@/components/dashboard/DashboardFeatureCards";
 import { DashboardActivityStatus } from "@/components/dashboard/DashboardActivityStatus";
-import { useOnboarding } from "@/hooks/useOnboarding";
 import { useToast } from "@/hooks/use-toast";
 import { debug } from "@/utils/debug";
 
 export const Dashboard = () => {
-  const { restartOnboarding } = useOnboarding();
   const { toast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -21,23 +19,6 @@ export const Dashboard = () => {
     });
   };
 
-  const handleRestartTour = () => {
-    debug.log('Restart tour button clicked');
-    try {
-      restartOnboarding();
-      toast({
-        title: "Tour Restarted",
-        description: "The onboarding tour has been restarted.",
-      });
-    } catch (error) {
-      debug.error('Error restarting tour', error);
-      toast({
-        title: "Tour Error",
-        description: "Unable to restart the tour. Please refresh the page and try again.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleUploadDocuments = () => {
     debug.log('Upload documents button clicked');
@@ -45,10 +26,8 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <DashboardHeader 
-        onRestartTour={handleRestartTour}
-      />
+    <div className="space-y-6" data-tour="welcome">
+      <DashboardHeader />
 
       {/* Trial Limits Indicator - Compact variant for header */}
       <TrialLimitsIndicator 

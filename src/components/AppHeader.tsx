@@ -3,18 +3,42 @@ import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoAuth } from '@/hooks/useDemoAuth';
-import { Home, Menu } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Home, Menu, Shield } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 export const AppHeader = () => {
   const { user } = useAuth();
   const { isDemoUser } = useDemoAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkIfAdmin();
+  }, [user]);
+
+  const checkIfAdmin = async () => {
+    if (!user) return;
+    
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+        
+      setIsAdmin(data?.role === 'admin');
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const navItems = [
     { path: '/documents', label: 'Documents' },
-    { path: '/compliance', label: 'Compliance' }
+    { path: '/compliance', label: 'Compliance' },
+    ...(isAdmin ? [{ path: '/admin/security', label: 'Security' }] : [])
   ];
 
   const handleLogoClick = () => {

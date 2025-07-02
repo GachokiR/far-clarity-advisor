@@ -98,7 +98,7 @@ export default function Compliance() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8" data-tour="compliance">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Compliance Management</h1>

@@ -81,7 +81,7 @@ export default function Documents() {
 
         <div className="grid gap-6">
           {/* Upload Section */}
-          <Card>
+          <Card data-tour="documents">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Upload className="h-5 w-5" />
