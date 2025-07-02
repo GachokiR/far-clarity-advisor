@@ -11,7 +11,7 @@ export const DashboardHeader = ({ onRestartTour }: DashboardHeaderProps) => {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Welcome to Compliance Pro</h2>
         <p className="text-muted-foreground">
-          Your comprehensive FAR compliance and security management platform
+          FAR Compliance Management Platform
         </p>
       </div>
       
