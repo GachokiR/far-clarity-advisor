@@ -15,9 +15,7 @@ export const AppHeader = () => {
   const navItems = [
     { path: '/documents', label: 'Documents' },
     { path: '/analysis', label: 'Analysis' },
-    { path: '/compliance', label: 'Compliance' },
-    { path: '/security', label: 'Security' },
-    { path: '/reports', label: 'Reports' }
+    { path: '/compliance', label: 'Compliance' }
   ];
 
   const handleLogoClick = () => {
