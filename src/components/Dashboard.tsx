@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { TrialLimitsIndicator } from "@/components/TrialLimitsIndicator";
 import { DocumentUploadModal } from "@/components/DocumentUploadModal";
-import { NavigationTestRunner } from "@/components/NavigationTestRunner";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardFeatureCards } from "@/components/dashboard/DashboardFeatureCards";
 import { DashboardActivityStatus } from "@/components/dashboard/DashboardActivityStatus";
@@ -13,7 +12,6 @@ export const Dashboard = () => {
   const { restartOnboarding } = useOnboarding();
   const { toast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [showTestRunner, setShowTestRunner] = useState(false);
 
   const handleUpgrade = () => {
     debug.log('Upgrade button clicked');
@@ -50,7 +48,6 @@ export const Dashboard = () => {
     <div className="space-y-6">
       <DashboardHeader 
         onRestartTour={handleRestartTour}
-        onToggleTestRunner={() => setShowTestRunner(!showTestRunner)}
       />
 
       {/* Trial Limits Indicator - Compact variant for header */}
@@ -63,11 +60,6 @@ export const Dashboard = () => {
       <DashboardFeatureCards onUploadDocuments={handleUploadDocuments} />
 
       <DashboardActivityStatus />
-
-      {/* Navigation Test Runner */}
-      {showTestRunner && (
-        <NavigationTestRunner onClose={() => setShowTestRunner(false)} />
-      )}
 
       {/* Document Upload Modal */}
       <DocumentUploadModal 

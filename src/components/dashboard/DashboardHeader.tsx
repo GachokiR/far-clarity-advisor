@@ -1,12 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { HelpCircle, TestTube } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 interface DashboardHeaderProps {
   onRestartTour: () => void;
-  onToggleTestRunner: () => void;
 }
 
-export const DashboardHeader = ({ onRestartTour, onToggleTestRunner }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ onRestartTour }: DashboardHeaderProps) => {
   return (
     <div className="flex justify-between items-center">
       <div>
@@ -24,14 +23,6 @@ export const DashboardHeader = ({ onRestartTour, onToggleTestRunner }: Dashboard
         >
           <HelpCircle className="h-4 w-4" />
           <span>Restart Tour</span>
-        </Button>
-        <Button
-          variant="outline"
-          onClick={onToggleTestRunner}
-          className="flex items-center space-x-2"
-        >
-          <TestTube className="h-4 w-4" />
-          <span>Test Navigation</span>
         </Button>
       </div>
     </div>
