@@ -6,6 +6,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Security-Policy': "default-src 'self'",
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
 };
 
 interface AnalysisRequest {
@@ -14,10 +18,73 @@ interface AnalysisRequest {
   documentId?: string;
 }
 
+// Rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes
+const RATE_LIMIT_MAX_REQUESTS = 10;
+
+// Input validation functions
+function validateInput(data: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!data.documentContent || typeof data.documentContent !== 'string') {
+    errors.push('Document content is required and must be a string');
+  } else if (data.documentContent.length > 1000000) { // 1MB limit
+    errors.push('Document content exceeds maximum size limit');
+  }
+  
+  if (!data.documentName || typeof data.documentName !== 'string') {
+    errors.push('Document name is required and must be a string');
+  } else if (data.documentName.length > 255) {
+    errors.push('Document name exceeds maximum length');
+  }
+  
+  // Check for potentially malicious content
+  const maliciousPatterns = [
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    /javascript:/gi,
+    /on\w+\s*=/gi,
+    /<iframe/gi,
+    /\.\.\//g, // Path traversal
+    /\x00/g // Null bytes
+  ];
+  
+  for (const pattern of maliciousPatterns) {
+    if (pattern.test(data.documentContent) || pattern.test(data.documentName)) {
+      errors.push('Content contains potentially dangerous patterns');
+      break;
+    }
+  }
+  
+  return { isValid: errors.length === 0, errors };
+}
+
+function checkRateLimit(userId: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(userId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return { allowed: true };
+  }
+  
+  if (userLimit.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, retryAfter: Math.ceil((userLimit.resetTime - now) / 1000) };
+  }
+  
+  userLimit.count++;
+  return { allowed: true };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const requestId = crypto.randomUUID();
+  const startTime = Date.now();
+  
+  console.log(`[${requestId}] AI analysis request started at ${new Date().toISOString()}`);
 
   try {
     const supabaseClient = createClient(
@@ -30,18 +97,72 @@ serve(async (req) => {
       }
     );
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    // Enhanced authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log(`[${requestId}] Missing or invalid authorization header`);
+      return new Response(JSON.stringify({ error: 'Missing or invalid authorization header' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const { documentContent, documentName, documentId }: AnalysisRequest = await req.json();
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      console.log(`[${requestId}] Authentication failed:`, authError?.message);
+      return new Response(JSON.stringify({ error: 'Unauthorized - Invalid or expired token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limiting
+    const rateLimitCheck = checkRateLimit(user.id);
+    if (!rateLimitCheck.allowed) {
+      console.log(`[${requestId}] Rate limit exceeded for user ${user.id}`);
+      return new Response(JSON.stringify({ 
+        error: 'Rate limit exceeded. Please try again later.',
+        retryAfter: rateLimitCheck.retryAfter 
+      }), {
+        status: 429,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': rateLimitCheck.retryAfter?.toString() || '300'
+        },
+      });
+    }
+
+    // Parse and validate request body
+    let requestData: AnalysisRequest;
+    try {
+      requestData = await req.json();
+    } catch (error) {
+      console.log(`[${requestId}] Invalid JSON in request body`);
+      return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Input validation
+    const validation = validateInput(requestData);
+    if (!validation.isValid) {
+      console.log(`[${requestId}] Input validation failed:`, validation.errors);
+      return new Response(JSON.stringify({ 
+        error: 'Input validation failed', 
+        details: validation.errors 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { documentContent, documentName, documentId } = requestData;
+    console.log(`[${requestId}] Processing analysis for user ${user.id}, document: ${documentName}`);
 
     // Enhanced AI analysis simulation (in production, this would use actual AI/ML services)
-    const analysisResults = await performAdvancedAnalysis(documentContent, documentName);
+    const analysisResults = await performAdvancedAnalysis(documentContent, documentName, requestId);
 
     // Store AI analysis results
     const { data: aiAnalysis, error: analysisError } = await supabaseClient
@@ -113,11 +234,14 @@ serve(async (req) => {
   }
 });
 
-async function performAdvancedAnalysis(content: string, documentName: string) {
+async function performAdvancedAnalysis(content: string, documentName: string, requestId: string) {
   const startTime = Date.now();
+  console.log(`[${requestId}] Starting advanced analysis for document: ${documentName}`);
   
   // Simulate advanced AI processing delay
   await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  console.log(`[${requestId}] Analysis processing completed in ${Date.now() - startTime}ms`);
 
   // Enhanced mock analysis with more sophisticated results
   const findings = {
