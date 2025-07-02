@@ -4,49 +4,67 @@ import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoAuth } from '@/hooks/useDemoAuth';
 import { Home, Menu } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export const AppHeader = () => {
   const { user } = useAuth();
   const { isDemoUser } = useDemoAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const navItems = [
+    { path: '/documents', label: 'Documents' },
+    { path: '/analysis', label: 'Analysis' },
+    { path: '/compliance', label: 'Compliance' },
+    { path: '/security', label: 'Security' },
+    { path: '/reports', label: 'Reports' }
+  ];
+
+  const handleLogoClick = () => {
+    navigate(user ? '/' : '/');
+  };
+
+  const isActivePath = (path: string) => {
+    return location.pathname === path;
+  };
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm">
+    <header className="bg-background border-b border-border shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                <Home className="h-5 w-5 text-white" />
+            <button 
+              onClick={handleLogoClick}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+                <Home className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                Compliance Pro
+              <span className="text-xl font-bold text-foreground">
+                FAR Clarity Advisor
               </span>
-            </Link>
+            </button>
           </div>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              to="/" 
-              className="text-gray-600 hover:text-gray-900 font-medium"
-            >
-              Dashboard
-            </Link>
-            <Link 
-              to="/analysis" 
-              className="text-gray-600 hover:text-gray-900 font-medium"
-            >
-              Analysis
-            </Link>
-            <Link 
-              to="/security" 
-              className="text-gray-600 hover:text-gray-900 font-medium"
-            >
-              Security
-            </Link>
-          </nav>
+          {user && (
+            <nav className="hidden md:flex items-center space-x-6">
+              {navItems.map((item) => (
+                <Link 
+                  key={item.path}
+                  to={item.path} 
+                  className={`font-medium transition-colors ${
+                    isActivePath(item.path)
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          )}
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Upload, BarChart3, Users, Shield, Brain, HelpCircle } from "lucide-react";
+import { FileText, Upload, BarChart3, Users, Shield, Brain, HelpCircle, TestTube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TrialLimitsIndicator } from "@/components/TrialLimitsIndicator";
 import { DocumentUploadModal } from "@/components/DocumentUploadModal";
+import { NavigationTestRunner } from "@/components/NavigationTestRunner";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useToast } from "@/hooks/use-toast";
 import { debug } from "@/utils/debug";
@@ -14,6 +15,7 @@ export const Dashboard = () => {
   const { restartOnboarding } = useOnboarding();
   const { toast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [showTestRunner, setShowTestRunner] = useState(false);
 
   const handleUpgrade = () => {
     debug.log('Upgrade button clicked');
@@ -88,14 +90,24 @@ export const Dashboard = () => {
           </p>
         </div>
         
-        <Button
-          variant="outline"
-          onClick={handleRestartTour}
-          className="flex items-center space-x-2"
-        >
-          <HelpCircle className="h-4 w-4" />
-          <span>Restart Tour</span>
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={handleRestartTour}
+            className="flex items-center space-x-2"
+          >
+            <HelpCircle className="h-4 w-4" />
+            <span>Restart Tour</span>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowTestRunner(!showTestRunner)}
+            className="flex items-center space-x-2"
+          >
+            <TestTube className="h-4 w-4" />
+            <span>Test Navigation</span>
+          </Button>
+        </div>
       </div>
 
       {/* Trial Limits Indicator - Compact variant for header */}
@@ -273,6 +285,11 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Navigation Test Runner */}
+      {showTestRunner && (
+        <NavigationTestRunner onClose={() => setShowTestRunner(false)} />
+      )}
 
       {/* Document Upload Modal */}
       <DocumentUploadModal 

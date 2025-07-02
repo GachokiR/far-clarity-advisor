@@ -12,6 +12,9 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Security from "./pages/Security";
 import Analysis from "./pages/Analysis";
+import Documents from "./pages/Documents";
+import Compliance from "./pages/Compliance";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -48,8 +51,11 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/security" element={<Security />} />
+                  <Route path="/documents" element={<Documents />} />
                   <Route path="/analysis" element={<Analysis />} />
+                  <Route path="/compliance" element={<Compliance />} />
+                  <Route path="/security" element={<Security />} />
+                  <Route path="/reports" element={<Reports />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
