@@ -14,7 +14,6 @@ export const AppHeader = () => {
 
   const navItems = [
     { path: '/documents', label: 'Documents' },
-    { path: '/analysis', label: 'Analysis' },
     { path: '/compliance', label: 'Compliance' }
   ];
 
