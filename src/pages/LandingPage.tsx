@@ -40,11 +40,11 @@ const LandingPage = () => {
             <a href="#features" className="hover:text-cyan-400 transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-cyan-400 transition-colors">How It Works</a>
             <a href="#pricing" className="hover:text-cyan-400 transition-colors">Pricing</a>
-            <a href="/dashboard" className="hover:text-cyan-400 transition-colors">Login</a>
+            <a href="/auth" className="hover:text-cyan-400 transition-colors">Login</a>
           </div>
           
           <a 
-            href="/dashboard" 
+            href="/auth" 
             className="bg-gradient-to-r from-cyan-400 via-blue-500 via-purple-600 via-pink-500 to-orange-500 px-8 py-3 rounded-full font-bold text-white hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
           >
             <span className="relative z-10">Start Free Trial</span>
@@ -79,7 +79,7 @@ const LandingPage = () => {
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <a 
-              href="/dashboard" 
+              href="/auth" 
               className="group bg-gradient-to-r from-cyan-400 via-blue-500 via-purple-600 via-pink-500 to-orange-500 px-10 py-5 rounded-full font-bold text-xl text-white hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 relative overflow-hidden"
             >
               <span className="relative z-10 flex items-center justify-center gap-3">
@@ -91,7 +91,7 @@ const LandingPage = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 transform skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
             </a>
             <a 
-              href="/dashboard" 
+              href="/auth" 
               className="group border-3 border-white/30 bg-white/10 backdrop-blur-sm px-10 py-5 rounded-full font-bold text-xl hover:border-cyan-400 hover:text-cyan-400 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
             >
               <span className="flex items-center justify-center gap-3">
@@ -292,7 +292,7 @@ const LandingPage = () => {
                   ))}
                 </ul>
                 <a 
-                  href="/dashboard" 
+                  href="/auth" 
                   className="w-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 inline-block"
                 >
                   {plan.cta}
@@ -312,7 +312,7 @@ const LandingPage = () => {
             Join over 1,000 government contractors who trust Gaen Technologies to keep them compliant and competitive. Start your free trial today - no credit card required.
           </p>
           <a 
-            href="/dashboard" 
+            href="/auth" 
             className="bg-white text-purple-700 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all duration-300 inline-block"
           >
             🚀 Start Your Free Trial Now
