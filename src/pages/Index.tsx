@@ -73,9 +73,9 @@ const Index = () => {
         return;
       }
 
-      // No user and not in demo mode - redirect to auth
-      debug.log('No user found, redirecting to auth');
-      navigate("/auth");
+      // No user and not in demo mode - redirect to landing page
+      debug.log('No user found, redirecting to landing page');
+      navigate("/");
     };
 
     checkAuth();

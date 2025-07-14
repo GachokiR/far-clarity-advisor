@@ -9,7 +9,8 @@ import { DemoAuthProvider } from "@/hooks/useDemoAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { TourProvider } from "@/components/tour/TourProvider";
-import Index from "./pages/Index";
+import LandingPage from "./pages/LandingPage";
+import Dashboard from "./pages/Index";
 import Auth from "./pages/Auth";
 import { SecurityDashboard } from "./pages/admin/SecurityDashboard";
 import Analysis from "./pages/Analysis";
@@ -51,7 +52,8 @@ const App = () => {
               <BrowserRouter>
                 <TourProvider>
                   <Routes>
-                    <Route path="/" element={<Index />} />
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/documents" element={<Documents />} />
                     <Route path="/analysis" element={<Analysis />} />

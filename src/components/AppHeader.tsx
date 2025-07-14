@@ -42,7 +42,11 @@ export const AppHeader = () => {
   ];
 
   const handleLogoClick = () => {
-    navigate(user ? '/' : '/');
+    if (user || isDemoUser) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
   };
 
   const isActivePath = (path: string) => {
