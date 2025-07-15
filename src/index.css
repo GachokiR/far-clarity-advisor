@@ -346,3 +346,227 @@ nav a:hover,
   background-clip: text;
   animation: gradient-shift 3s ease infinite;
 }
+
+/* ================================================================
+   PHASE 2: ENHANCED COMPONENT STYLING
+   Add this AFTER Phase 1 is working correctly
+   This enhances cards, buttons, and components safely
+================================================================ */
+
+/* === CARD ENHANCEMENTS === */
+.card, 
+.bg-white:not(input):not(textarea):not(select), 
+.bg-gray-50:not(input):not(textarea):not(select),
+[class*="card"]:not(input):not(textarea):not(select) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s ease;
+}
+
+.card:hover, 
+[class*="card"]:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* === BUTTON ENHANCEMENTS === */
+
+/* Primary Buttons */
+.btn-primary, 
+button[class*="primary"]:not([disabled]), 
+.bg-blue-600:not([disabled]),
+button:not([disabled])[class*="bg-blue"] {
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  color: white !important;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover, 
+button[class*="primary"]:not([disabled]):hover,
+.bg-blue-600:not([disabled]):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(102, 0, 255, 0.4);
+}
+
+/* Secondary Buttons */
+.btn-secondary, 
+button[class*="secondary"]:not([disabled]),
+.bg-gray-100:not([disabled]) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  color: var(--text-primary) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover, 
+button[class*="secondary"]:not([disabled]):hover {
+  border-color: var(--color-cyan) !important;
+  color: var(--color-cyan) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+/* === BADGE/TAG STYLING === */
+.badge, 
+.tag, 
+.bg-green-100, 
+.bg-blue-100, 
+.bg-yellow-100,
+.bg-red-100 {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+  border-radius: 20px !important;
+  padding: 4px 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  border: none !important;
+}
+
+/* Status-specific badges */
+.bg-green-100 {
+  background: linear-gradient(45deg, #10B981, #34D399) !important;
+}
+
+.bg-yellow-100 {
+  background: linear-gradient(45deg, #F59E0B, #FCD34D) !important;
+}
+
+.bg-red-100 {
+  background: linear-gradient(45deg, #EF4444, #F87171) !important;
+}
+
+/* === PROGRESS BARS === */
+.progress, 
+[class*="progress"]:not(input) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+.progress-bar, 
+[class*="progress"] > div:first-child {
+  background: var(--gradient-primary) !important;
+  border-radius: 10px !important;
+  transition: all 0.3s ease;
+}
+
+/* === TEXT ENHANCEMENTS === */
+
+/* Make headings more visible but keep functionality */
+h1:not(.gaen-gradient-text), 
+h2:not(.gaen-gradient-text), 
+h3:not(.gaen-gradient-text), 
+h4:not(.gaen-gradient-text) {
+  color: var(--text-primary) !important;
+}
+
+/* Large headings get gradient treatment */
+.text-2xl, 
+.text-3xl, 
+.text-4xl {
+  background: var(--gradient-primary) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: 700 !important;
+}
+
+/* Regular text improvements */
+p, span:not([class*="text-"]), div:not([class*="bg-"]) {
+  color: var(--text-secondary) !important;
+}
+
+/* Muted text */
+.text-gray-600, 
+.text-gray-500, 
+.text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+/* === TABLE IMPROVEMENTS === */
+table {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+th {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+td {
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* === MODAL/DIALOG IMPROVEMENTS === */
+.modal, 
+.dialog, 
+[role="dialog"],
+[class*="modal"],
+[class*="dialog"] {
+  background: rgba(26, 26, 46, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  color: var(--text-primary) !important;
+}
+
+/* === SAFE OVERRIDES === */
+
+/* Ensure critical text remains visible */
+.text-black { 
+  color: var(--text-primary) !important; 
+}
+
+.text-gray-900 { 
+  color: var(--text-primary) !important; 
+}
+
+.text-gray-800 { 
+  color: var(--text-secondary) !important; 
+}
+
+/* Force borders to be visible */
+.border-gray-200 { 
+  border-color: rgba(255, 255, 255, 0.1) !important; 
+}
+
+.border-gray-300 { 
+  border-color: rgba(255, 255, 255, 0.2) !important; 
+}
+
+/* === RESPONSIVE ADJUSTMENTS === */
+@media (max-width: 768px) {
+  .card, [class*="card"] {
+    margin: 0.5rem !important;
+    padding: 1rem !important;
+  }
+  
+  .text-4xl { 
+    font-size: 2rem !important; 
+  }
+  
+  .text-3xl { 
+    font-size: 1.75rem !important; 
+  }
+}
+
+/* === PHASE 2 COMPLETE === */
+/* Test this phase thoroughly before proceeding to Phase 3 */
