@@ -347,6 +347,66 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          timestamp: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -360,9 +420,24 @@ export type Database = {
         Args: { tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: Json
       }
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_user_tier: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["subscription_tier"]
+      }
+      has_role: {
+        Args: {
+          user_id: string
+          check_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
       }
       is_trial_expired: {
         Args: { user_id: string }
@@ -377,6 +452,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "analyst" | "user"
       subscription_tier: "trial" | "basic" | "professional" | "enterprise"
     }
     CompositeTypes: {
@@ -505,6 +581,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "analyst", "user"],
       subscription_tier: ["trial", "basic", "professional", "enterprise"],
     },
   },
