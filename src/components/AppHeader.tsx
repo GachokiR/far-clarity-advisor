@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoAuth } from '@/hooks/useDemoAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { rbacService } from '@/utils/rbacService';
 import { Home, Menu, Shield } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -23,13 +23,8 @@ export const AppHeader = () => {
     if (!user) return;
     
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-        
-      setIsAdmin(data?.role === 'admin');
+      const adminStatus = await rbacService.isAdmin(user.id);
+      setIsAdmin(adminStatus);
     } catch (error) {
       console.error('Error checking admin status:', error);
     }

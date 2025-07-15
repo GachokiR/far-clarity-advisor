@@ -183,7 +183,7 @@ class SecurityTestingService {
 
     // Test role assignment
     try {
-      const userRole = rbacService.assignRole(testUserId, 'user', 'system');
+      const userRole = await rbacService.assignRole(testUserId, 'user', 'system');
       tests.push({
         testName: 'Role Assignment',
         passed: !!userRole,
@@ -193,7 +193,7 @@ class SecurityTestingService {
       });
 
       // Test permission checking
-      const hasPermission = rbacService.hasPermission(testUserId, 'read:documents');
+      const hasPermission = await rbacService.hasPermission(testUserId, 'read:documents');
       tests.push({
         testName: 'Permission Checking',
         passed: hasPermission,
@@ -203,7 +203,7 @@ class SecurityTestingService {
       });
 
       // Test unauthorized access prevention
-      const hasAdminPermission = rbacService.hasPermission(testUserId, 'admin:system');
+      const hasAdminPermission = await rbacService.hasPermission(testUserId, 'admin:system');
       tests.push({
         testName: 'Unauthorized Access Prevention',
         passed: !hasAdminPermission,
@@ -221,8 +221,8 @@ class SecurityTestingService {
         severity: 'error'
       });
     } finally {
-      // Cleanup
-      rbacService.removeUserRole(testUserId);
+      // Cleanup - Note: we need the role to remove
+      await rbacService.removeUserRole(testUserId, 'user');
     }
 
     const overallStatus = tests.every(t => t.passed) ? 'passed' : 

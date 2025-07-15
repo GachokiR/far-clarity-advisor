@@ -442,6 +442,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_first_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_expired_demo_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined

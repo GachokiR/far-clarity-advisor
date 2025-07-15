@@ -19,42 +19,49 @@ class RBACService {
   }
 
   // Role Management
-  assignRole(userId: string, role: Role, assignedBy: string): UserRole {
-    return roleManager.assignRole(userId, role, assignedBy);
+  async assignRole(userId: string, role: Role, assignedBy: string): Promise<UserRole | null> {
+    return await roleManager.assignRole(userId, role, assignedBy);
   }
 
-  getUserRole(userId: string): UserRole | null {
-    return roleManager.getUserRole(userId);
+  async getUserRole(userId: string): Promise<UserRole | null> {
+    return await roleManager.getUserRole(userId);
   }
 
-  getAllUserRoles(): UserRole[] {
-    return roleManager.getAllUserRoles();
+  async getAllUserRoles(): Promise<UserRole[]> {
+    return await roleManager.getAllUserRoles();
   }
 
-  removeUserRole(userId: string): boolean {
-    return roleManager.removeUserRole(userId);
+  async removeUserRole(userId: string, role: Role): Promise<boolean> {
+    return await roleManager.removeUserRole(userId, role);
   }
 
-  // Permission Management
-  addPermission(userId: string, permission: Permission): boolean {
-    return roleManager.addPermission(userId, permission);
-  }
-
-  removePermission(userId: string, permission: Permission): boolean {
-    return roleManager.removePermission(userId, permission);
+  async getUserPermissions(userId: string): Promise<Permission[]> {
+    return await roleManager.getUserPermissions(userId);
   }
 
   // Permission Checking
-  hasPermission(userId: string, permission: Permission): boolean {
-    return permissionChecker.hasPermission(userId, permission);
+  async hasPermission(userId: string, permission: Permission): Promise<boolean> {
+    return await permissionChecker.hasPermission(userId, permission);
   }
 
-  hasAnyPermission(userId: string, permissions: Permission[]): boolean {
-    return permissionChecker.hasAnyPermission(userId, permissions);
+  async hasAnyPermission(userId: string, permissions: Permission[]): Promise<boolean> {
+    return await permissionChecker.hasAnyPermission(userId, permissions);
   }
 
-  hasAllPermissions(userId: string, permissions: Permission[]): boolean {
-    return permissionChecker.hasAllPermissions(userId, permissions);
+  async hasAllPermissions(userId: string, permissions: Permission[]): Promise<boolean> {
+    return await permissionChecker.hasAllPermissions(userId, permissions);
+  }
+
+  async hasRole(userId: string, role: Role): Promise<boolean> {
+    return await permissionChecker.hasRole(userId, role);
+  }
+
+  async hasAnyRole(userId: string, roles: Role[]): Promise<boolean> {
+    return await permissionChecker.hasAnyRole(userId, roles);
+  }
+
+  async isAdmin(userId: string): Promise<boolean> {
+    return await permissionChecker.isAdmin(userId);
   }
 
   // Role Definitions
@@ -73,6 +80,11 @@ class RBACService {
 
   requireAnyRole(roles: Role[]) {
     return permissionChecker.requireAnyRole(roles);
+  }
+
+  // Cache management
+  clearCache() {
+    roleManager.clearCache();
   }
 }
 

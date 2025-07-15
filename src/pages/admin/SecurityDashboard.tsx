@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { rbacService } from '@/utils/rbacService';
 
 export const SecurityDashboard = () => {
   const { user } = useAuth();
@@ -31,16 +32,10 @@ export const SecurityDashboard = () => {
     }
 
     try {
-      // Check if user has admin role in profiles
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      // Check if user has admin role using RBAC service
+      const adminStatus = await rbacService.isAdmin(user.id);
 
-      if (error) throw error;
-
-      if (data?.role !== 'admin') {
+      if (!adminStatus) {
         toast({
           title: "Access Denied",
           description: "You don't have permission to access this page",
