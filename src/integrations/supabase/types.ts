@@ -303,7 +303,6 @@ export type Database = {
           id: string
           is_demo_user: boolean
           last_name: string | null
-          role: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           subscription_updated_at: string
           trial_end_date: string
@@ -320,7 +319,6 @@ export type Database = {
           id: string
           is_demo_user?: boolean
           last_name?: string | null
-          role?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           subscription_updated_at?: string
           trial_end_date?: string
@@ -337,13 +335,45 @@ export type Database = {
           id?: string
           is_demo_user?: boolean
           last_name?: string | null
-          role?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           subscription_updated_at?: string
           trial_end_date?: string
           trial_start_date?: string
           updated_at?: string
           usage_limits?: Json
+        }
+        Relationships: []
+      }
+      role_audit_log: {
+        Row: {
+          action: string
+          assigned_by: string | null
+          id: string
+          new_role: Database["public"]["Enums"]["app_role"] | null
+          old_role: Database["public"]["Enums"]["app_role"] | null
+          reason: string | null
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          assigned_by?: string | null
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          reason?: string | null
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          assigned_by?: string | null
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          reason?: string | null
+          timestamp?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -416,6 +446,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_old_security_events: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_tier_limits: {
         Args: { tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: Json
@@ -443,12 +477,20 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      log_security_event: {
+        Args: { event_type: string; user_id: string; details?: Json }
+        Returns: undefined
+      }
       upgrade_user_tier: {
         Args: {
           user_id: string
           new_tier: Database["public"]["Enums"]["subscription_tier"]
         }
         Returns: undefined
+      }
+      validate_session_integrity: {
+        Args: { user_id: string }
+        Returns: boolean
       }
     }
     Enums: {
