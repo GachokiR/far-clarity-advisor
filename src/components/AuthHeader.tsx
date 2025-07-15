@@ -13,7 +13,7 @@ export const AuthHeader = ({ isLogin }: AuthHeaderProps) => {
         <Shield className="h-12 w-12 text-blue-600" />
       </div>
       <CardTitle className="text-2xl">
-        {isLogin ? "Welcome Back" : "Join Far V.02"}
+        {isLogin ? "Welcome" : "Join Far V.02"}
       </CardTitle>
       <CardDescription>
         {isLogin 

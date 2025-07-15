@@ -11,7 +11,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <Card className="shadow-2xl border-0 overflow-hidden">
           {!isLogin && <TrialHeroSection />}
