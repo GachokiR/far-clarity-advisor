@@ -1,88 +1,109 @@
 
+/* ================================================================
+   PHASE 1: SAFE THEME FOUNDATION
+   Add this to your main CSS file (src/index.css or src/globals.css)
+   This establishes the brand without breaking existing functionality
+================================================================ */
+
+/* Import the Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* === GAEN TECHNOLOGIES BRAND COLORS === */
-    --gradient-primary: linear-gradient(135deg, #00D4FF 0%, #0066FF 25%, #6600FF 50%, #FF0066 75%, #FF6600 100%);
-    --gradient-secondary: linear-gradient(45deg, #0066FF 0%, #6600FF 50%, #FF0066 100%);
-    --gradient-accent: linear-gradient(90deg, #00D4FF 0%, #0066FF 100%);
-    
-    --color-cyan: #00D4FF;
-    --color-blue: #0066FF;
-    --color-purple: #6600FF;
-    --color-magenta: #FF0066;
-    --color-orange: #FF6600;
-    
-    /* Dark theme colors */
-    --color-dark: #0F0F23;
-    --color-gray-dark: #1A1A2E;
-    --color-gray: #16213E;
-    
-    /* Updated semantic tokens for Gaen theme */
-    --background: 240 29% 7%;
-    --foreground: 0 0% 100%;
-    --card: 240 29% 7%;
-    --card-foreground: 0 0% 100%;
-    --popover: 240 29% 7%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 240 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 260 100% 50%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 240 29% 10%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 195 100% 50%;
-    --accent-foreground: 240 29% 7%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 100% / 0.1;
-    --input: 0 0% 100% / 0.1;
-    --ring: 195 100% 50%;
-    --chart-1: 195 100% 50%;
-    --chart-2: 240 100% 50%;
-    --chart-3: 260 100% 50%;
-    --chart-4: 338 100% 50%;
-    --chart-5: 24 100% 50%;
-    --radius: 0.5rem;
-  }
+:root {
+  /* === GAEN TECHNOLOGIES BRAND COLORS === */
+  --gradient-primary: linear-gradient(135deg, #00D4FF 0%, #0066FF 25%, #6600FF 50%, #FF0066 75%, #FF6600 100%);
+  --gradient-secondary: linear-gradient(45deg, #0066FF 0%, #6600FF 50%, #FF0066 100%);
+  --gradient-accent: linear-gradient(90deg, #00D4FF 0%, #0066FF 100%);
+  
+  --color-cyan: #00D4FF;
+  --color-blue: #0066FF;
+  --color-purple: #6600FF;
+  --color-magenta: #FF0066;
+  --color-orange: #FF6600;
+  
+  /* Safe background colors that won't break content */
+  --color-dark: #0F0F23;
+  --color-gray-dark: #1A1A2E;
+  --color-gray: #16213E;
+  
+  /* Safe text colors */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted: rgba(255, 255, 255, 0.6);
 
-  .dark {
-    --background: 240 29% 7%;
-    --foreground: 0 0% 100%;
-    --card: 240 29% 7%;
-    --card-foreground: 0 0% 100%;
-    --popover: 240 29% 7%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 240 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 260 100% 50%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 240 29% 10%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 195 100% 50%;
-    --accent-foreground: 240 29% 7%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 100% / 0.1;
-    --input: 0 0% 100% / 0.1;
-    --ring: 195 100% 50%;
-    --chart-1: 195 100% 50%;
-    --chart-2: 240 100% 50%;
-    --chart-3: 260 100% 50%;
-    --chart-4: 338 100% 50%;
-    --chart-5: 24 100% 50%;
-  }
+  /* Light theme colors - keeping original values from theme */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 10% 3.9%;
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
 }
 
 @layer base {
+  /* === PHASE 1: BASIC THEME APPLICATION === */
+
+  /* Set the font family globally */
   * {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     @apply border-border;
   }
+
+  /* Only apply background to body - won't affect components */
   body {
-    @apply bg-background text-foreground;
+    background: linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    @apply text-foreground;
   }
 }
 
@@ -226,137 +247,53 @@
   left: 100%;
 }
 
-/* ================================================================
-   GAEN TECHNOLOGIES THEME ENHANCEMENTS
-   Advanced styling for the FAR Compliance Platform
-================================================================ */
-
-/* Global background styling */
-body {
-  background: linear-gradient(135deg, var(--color-dark) 0%, var(--color-gray-dark) 50%, var(--color-gray) 100%);
-  color: white;
-}
-
-/* Override body background for dark theme */
-html.dark body {
-  background: linear-gradient(135deg, var(--color-dark) 0%, var(--color-gray-dark) 50%, var(--color-gray) 100%);
-}
-
-/* Enhanced glassmorphism cards */
-.card, .bg-card {
-  background: rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  transform: translateY(-2px);
-}
-
-/* Primary button enhancements */
-.btn-primary, button[data-variant="default"] {
+/* === BRAND LOGO STYLING === */
+/* Target your specific logo/brand elements */
+.logo, 
+[class*="logo"], 
+.brand,
+h1:contains("Far V.02"),
+h1:contains("FAR Compliance"),
+h1:contains("Compliance Pro") {
   background: var(--gradient-primary) !important;
-  border: none !important;
-  color: white !important;
-  transition: all 0.3s ease;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: 800 !important;
 }
 
-.btn-primary:hover, button[data-variant="default"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(102, 0, 255, 0.3);
-}
-
-/* Secondary button styling */
-.btn-secondary, button[data-variant="secondary"] {
-  background: transparent !important;
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  backdrop-filter: blur(10px);
-}
-
-.btn-secondary:hover, button[data-variant="secondary"]:hover {
-  border-color: var(--color-cyan) !important;
-  color: var(--color-cyan) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Outline button styling */
-button[data-variant="outline"] {
-  background: transparent !important;
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  backdrop-filter: blur(10px);
-}
-
-button[data-variant="outline"]:hover {
-  border-color: var(--color-cyan) !important;
-  color: var(--color-cyan) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Input field styling */
-input, textarea, select {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  backdrop-filter: blur(10px);
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: var(--color-cyan) !important;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3) !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-input::placeholder, textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5) !important;
-}
-
-/* Enhanced progress bars */
-.progress {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 10px !important;
-}
-
-.progress-bar {
-  background: var(--gradient-primary) !important;
-  border-radius: 10px !important;
-}
-
-/* Modal and dialog enhancements */
-.modal, .dialog, [role="dialog"] {
-  background: rgba(26, 26, 46, 0.95) !important;
+/* === SAFE HEADER ENHANCEMENTS === */
+header, 
+.header, 
+[class*="header"] {
+  background: rgba(15, 15, 35, 0.95) !important;
   backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 20px !important;
-}
-
-/* Table styling */
-table {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-
-th {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: white !important;
-  font-weight: 600;
-}
-
-td {
-  color: rgba(255, 255, 255, 0.9) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-primary) !important;
 }
 
-tr:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
+/* Make header text visible */
+header h1,
+header h2,
+header p,
+header span {
+  color: var(--text-primary) !important;
 }
 
-/* Enhanced scrollbar */
+/* === SAFE NAVIGATION STYLING === */
+nav a, 
+.nav-link {
+  transition: all 0.3s ease;
+  color: var(--text-secondary) !important;
+}
+
+nav a:hover, 
+.nav-link:hover {
+  color: var(--color-cyan) !important;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+/* === SAFE SCROLLBAR === */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -374,58 +311,38 @@ tr:hover {
   background: var(--gradient-secondary);
 }
 
-/* Text selection */
+/* === SAFE SELECTION === */
 ::selection {
   background: var(--color-cyan);
   color: var(--color-dark);
 }
 
-/* Gradient text for headings */
-.text-gradient {
+/* === SAFE ANIMATIONS === */
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(102, 0, 255, 0.3); 
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(102, 0, 255, 0.6); 
+  }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Animation classes you can apply manually */
+.gaen-glow {
+  animation: pulse-glow 3s infinite;
+}
+
+.gaen-gradient-text {
   background: var(--gradient-primary);
+  background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* Enhanced glow animations */
-@keyframes gaen-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(102, 0, 255, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(102, 0, 255, 0.6); }
-}
-
-.animate-gaen-glow {
-  animation: gaen-glow 3s infinite;
-}
-
-/* Status indicator styling */
-.status-success {
-  color: #10B981 !important;
-  background: rgba(16, 185, 129, 0.1) !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
-}
-
-.status-warning {
-  color: #F59E0B !important;
-  background: rgba(245, 158, 11, 0.1) !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-}
-
-.status-error {
-  color: #EF4444 !important;
-  background: rgba(239, 68, 68, 0.1) !important;
-  border: 1px solid rgba(239, 68, 68, 0.3) !important;
-}
-
-.status-info {
-  color: var(--color-cyan) !important;
-  background: rgba(0, 212, 255, 0.1) !important;
-  border: 1px solid rgba(0, 212, 255, 0.3) !important;
-}
-
-/* Update onboarding cards for theme */
-.onboarding-card {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
+  animation: gradient-shift 3s ease infinite;
 }
