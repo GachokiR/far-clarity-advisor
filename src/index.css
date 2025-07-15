@@ -5,6 +5,211 @@
    This establishes the brand without breaking existing functionality
 ================================================================ */
 
+/* ================================================================
+   🚨 EMERGENCY AUTH FIX - ADD THIS TO YOUR CSS IMMEDIATELY
+   This will fix the critical form readability issues
+   Add this to the TOP of your CSS file for highest priority
+================================================================ */
+
+/* === EMERGENCY FORM INPUT FIXES === */
+
+/* Force all inputs to be readable */
+input[type="email"],
+input[type="password"],
+input[type="text"],
+textarea,
+select {
+  background: #1f2937 !important;
+  color: #ffffff !important;
+  border: 2px solid #374151 !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+}
+
+/* Force focus states to be visible */
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #00D4FF !important;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2) !important;
+  outline: none !important;
+  background: #111827 !important;
+}
+
+/* Force placeholder visibility */
+input::placeholder,
+textarea::placeholder {
+  color: #9CA3AF !important;
+  opacity: 1 !important;
+}
+
+/* === EMERGENCY BUTTON FIXES === */
+
+/* Fix primary buttons */
+.bg-blue-600,
+button[class*="bg-blue"] {
+  background: linear-gradient(135deg, #00D4FF 0%, #0066FF 50%, #6600FF 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+/* Fix secondary/demo buttons */
+.bg-slate-100,
+.bg-gray-100 {
+  background: rgba(0, 212, 255, 0.15) !important;
+  color: #00D4FF !important;
+  border: 2px solid rgba(0, 212, 255, 0.4) !important;
+  font-weight: 600 !important;
+}
+
+.bg-slate-100:hover,
+.bg-gray-100:hover {
+  background: rgba(0, 212, 255, 0.25) !important;
+  border-color: #00D4FF !important;
+  transform: translateY(-1px);
+}
+
+/* === EMERGENCY TEXT FIXES === */
+
+/* Force all text to be visible */
+.text-gray-600,
+.text-gray-500,
+.text-gray-400 {
+  color: #D1D5DB !important;
+}
+
+/* Force labels to be visible */
+label {
+  color: #F9FAFB !important;
+  font-weight: 500 !important;
+}
+
+/* === EMERGENCY BACKGROUND FIX === */
+
+/* Force auth page background */
+.min-h-screen {
+  background: linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%) !important;
+}
+
+/* === EMERGENCY CARD FIXES === */
+
+/* Fix auth cards to be visible */
+.bg-white {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Ensure card text is dark on light background */
+.bg-white h1,
+.bg-white h2,
+.bg-white h3,
+.bg-white p,
+.bg-white span,
+.bg-white label,
+.bg-white div {
+  color: #1f2937 !important;
+}
+
+/* Fix card inputs to be light on dark for readability */
+.bg-white input[type="email"],
+.bg-white input[type="password"],
+.bg-white input[type="text"],
+.bg-white textarea,
+.bg-white select {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #d1d5db !important;
+}
+
+.bg-white input[type="email"]:focus,
+.bg-white input[type="password"]:focus,
+.bg-white input[type="text"]:focus,
+.bg-white textarea:focus,
+.bg-white select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+.bg-white input::placeholder,
+.bg-white textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+/* === EMERGENCY TRUST INDICATOR FIX === */
+
+/* Fix trust indicators at bottom */
+.flex.items-center.justify-center.gap-6 {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  padding: 12px 20px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.flex.items-center.gap-2 span {
+  color: #ffffff !important;
+  font-weight: 500 !important;
+}
+
+.w-2.h-2.bg-green-500.rounded-full {
+  background: #10B981 !important;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* === EMERGENCY LOADING STATE FIX === */
+
+/* Fix loading spinners */
+.animate-spin {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-top-color: #ffffff !important;
+}
+
+/* === EMERGENCY ICON FIXES === */
+
+/* Fix icon colors */
+.text-slate-400,
+.text-gray-400 {
+  color: #9CA3AF !important;
+}
+
+/* === EMERGENCY RESPONSIVE FIX === */
+
+@media (max-width: 768px) {
+  input[type="email"],
+  input[type="password"],
+  input[type="text"],
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevent zoom on mobile */
+    padding: 14px 16px !important;
+  }
+}
+
+/* === EMERGENCY DISABLED STATE FIX === */
+
+button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background: rgba(107, 114, 128, 0.3) !important;
+  cursor: not-allowed !important;
+}
+
+/* ================================================================
+   🚨 EMERGENCY FIX COMPLETE
+   Save this file and reload your app - forms should now be readable
+   If issues persist, check the browser console for conflicts
+================================================================ */
+
 /* Import the Inter font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
