@@ -86,9 +86,30 @@ export const AppHeader = () => {
             </nav>
           )}
 
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            {user && <UserMenu />}
+          {/* User Menu / Auth Buttons */}
+          <div className="flex items-center space-x-2">
+            {user || isDemoUser ? (
+              <UserMenu />
+            ) : (
+              <>
+                {/* Always visible auth buttons on mobile and desktop */}
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-foreground hover:text-primary"
+                  onClick={() => navigate('/auth')}
+                >
+                  Login
+                </Button>
+                <Button 
+                  size="sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={() => navigate('/auth')}
+                >
+                  Start Free Trial
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
