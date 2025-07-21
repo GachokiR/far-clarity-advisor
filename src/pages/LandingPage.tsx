@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useDemoAuth } from '@/hooks/useDemoAuth';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const { isDemoUser } = useDemoAuth();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!loading && (user || isDemoUser)) {
+      navigate('/dashboard');
+    }
+  }, [user, isDemoUser, loading, navigate]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-blue-500 via-purple-600 via-pink-500 to-orange-500 text-white relative overflow-hidden">
       {/* Animated Background Overlay */}
