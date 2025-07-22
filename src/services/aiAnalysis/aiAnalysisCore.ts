@@ -11,63 +11,60 @@ import { safeGPTCall } from '@/lib/gptClient';
 import { AIAnalysisResult } from '@/types/aiAnalysis';
 
 export const runAIAnalysis = async (documentContent: string, documentName: string, documentId?: string) => {
+  let userId = 'unknown';
+
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      throw new Error('User must be authenticated');
-    }
+    if (!user) throw new Error('User must be authenticated');
+    userId = user.id;
 
-    logger.info('Starting AI analysis', { documentName, userId: user.id }, 'AIAnalysisService');
+    logger.info('Starting AI analysis', { documentName, userId }, 'AIAnalysisService');
 
-    // Rate limiting check
     if (!aiAnalysisRateLimiter.isAllowed(user.id)) {
       const resetTime = aiAnalysisRateLimiter.getResetTime(user.id);
-      const resetDate = new Date(resetTime).toLocaleTimeString();
-      throw new Error(`Rate limit exceeded. Try again after ${resetDate}`);
+      throw new Error(`Rate limit exceeded. Try again after ${new Date(resetTime).toLocaleTimeString()}`);
     }
 
-    // Validate and sanitize inputs
     const contentValidation = validateDocumentContent(documentContent);
-    if (!contentValidation.isValid) {
-      throw new Error(`Invalid document content: ${contentValidation.errors.join(', ')}`);
-    }
+    if (!contentValidation.isValid) throw new Error(`Invalid document content: ${contentValidation.errors.join(', ')}`);
 
     const nameValidation = validateDocumentName(documentName);
-    if (!nameValidation.isValid) {
-      throw new Error(`Invalid document name: ${nameValidation.errors.join(', ')}`);
+    if (!nameValidation.isValid) throw new Error(`Invalid document name: ${nameValidation.errors.join(', ')}`);
+
+    const sanitized = contentValidation.sanitizedValue;
+    if (sanitized.length < 100) throw new Error('Document content too short for meaningful analysis (minimum 100 characters)');
+
+    const sensitivePatterns = {
+      ssn: /\b\d{3}-\d{2}-\d{4}\b/,
+      creditCard: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/,
+      emails: sanitized.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || []
+    };
+
+    if (sensitivePatterns.ssn.test(sanitized)) {
+      logSuspiciousActivity(userId, 'sensitive_data_detected', { type: 'ssn', documentName });
+      throw new Error('Document contains Social Security Numbers');
     }
 
-    // Additional content security checks
-    if (contentValidation.sanitizedValue.length < 100) {
-      throw new Error('Document content is too short for meaningful analysis (minimum 100 characters)');
+    if (sensitivePatterns.creditCard.test(sanitized)) {
+      logSuspiciousActivity(userId, 'sensitive_data_detected', { type: 'credit_card', documentName });
+      throw new Error('Document contains credit card numbers');
     }
 
-    // Check for potentially sensitive information patterns
-    const sensitivePatterns = [
-      /\b\d{3}-\d{2}-\d{4}\b/, // SSN pattern
-      /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/, // Credit card pattern
-      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g // Email pattern (multiple)
-    ];
-
-    const emailMatches = contentValidation.sanitizedValue.match(sensitivePatterns[2]);
-    if (emailMatches && emailMatches.length > 5) {
-      logger.warn('Document contains multiple email addresses - potential PII risk', { documentName, userId: user.id }, 'AIAnalysisService');
-      logSuspiciousActivity(user.id, 'multiple_emails_in_document', { documentName, emailCount: emailMatches.length });
+    if (sensitivePatterns.emails.length > 5) {
+      logger.warn('Document contains multiple email addresses - potential PII risk', { documentName, userId, emailCount: sensitivePatterns.emails.length }, 'AIAnalysisService');
+      logSuspiciousActivity(userId, 'multiple_emails_in_document', { documentName, emailCount: sensitivePatterns.emails.length });
     }
 
-    // Check cache first
     if (documentId) {
       const cached = getCachedAnalysis(documentId);
       if (cached) {
-        logger.info('Using cached analysis result', { documentName, userId: user.id }, 'AIAnalysisService');
+        logger.info('Using cached analysis result', { documentName, userId }, 'AIAnalysisService');
         return cached;
       }
     }
 
-    // Truncate content to token limit
-    const truncatedContent = truncateToTokenLimit(contentValidation.sanitizedValue);
+    const truncatedContent = truncateToTokenLimit(sanitized, 3000);
 
-    // Create analysis prompt
     const prompt = `Analyze the following Federal RFP document content and extract relevant FAR (Federal Acquisition Regulation) clauses. Respond in JSON format with the following structure:
     {
       "farClauses": [
@@ -97,31 +94,18 @@ export const runAIAnalysis = async (documentContent: string, documentName: strin
     Document Content:
     ${truncatedContent}`;
 
+    let gptResult;
     try {
       // Try direct GPT call first
-      const result = await safeGPTCall({
+      gptResult = await safeGPTCall({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3
       });
 
-      const analysisResult = {
-        documentId: documentId || 'unknown',
-        userId: user.id,
-        result: result,
-        timestamp: new Date().toISOString()
-      };
-
-      // Cache the result
-      if (documentId) {
-        setCachedAnalysis(documentId, analysisResult);
-      }
-
-      logger.info('AI analysis completed successfully via direct GPT call', { documentName, userId: user.id }, 'AIAnalysisService');
-      return analysisResult;
-
+      logger.info('AI analysis completed successfully via direct GPT call', { documentName, userId }, 'AIAnalysisService');
     } catch (gptError) {
-      logger.warn('Direct GPT call failed, falling back to Supabase function', { error: gptError, documentName, userId: user.id }, 'AIAnalysisService');
+      logger.warn('Direct GPT call failed, falling back to Supabase function', { error: gptError, documentName, userId }, 'AIAnalysisService');
       
       // Fallback to Supabase edge function
       const { data, error } = await supabase.functions.invoke('ai-compliance-analysis', {
@@ -133,16 +117,31 @@ export const runAIAnalysis = async (documentContent: string, documentName: strin
       });
 
       if (error) {
-        logger.error('Supabase AI Analysis Error', error, 'AIAnalysisService', user.id);
+        logger.error('Supabase AI Analysis Error', error, 'AIAnalysisService', userId);
         throw new Error('Failed to process document analysis. Please try again.');
       }
 
-      logger.info('AI analysis completed successfully via Supabase function', { documentName, userId: user.id }, 'AIAnalysisService');
-      return data;
+      gptResult = data;
+      logger.info('AI analysis completed successfully via Supabase function', { documentName, userId }, 'AIAnalysisService');
     }
+
+    const analysisResult = {
+      documentId: documentId || 'unknown',
+      userId,
+      result: gptResult,
+      timestamp: new Date().toISOString()
+    };
+
+    // Cache the result
+    if (documentId) {
+      setCachedAnalysis(documentId, analysisResult);
+    }
+
+    return analysisResult;
 
   } catch (error: any) {
     logger.error('AI analysis failed', error, 'AIAnalysisService');
+    logSuspiciousActivity(userId, 'ai_analysis_error', { error: error.message, documentName });
     return Promise.reject(handleApiError(error, 'runAIAnalysis'));
   }
 };
