@@ -5,11 +5,13 @@ import { aiAnalysisRateLimiter } from '@/utils/rateLimiting';
 import { sanitizeError, handleApiError } from '@/utils/errorSanitizer';
 import { logger } from '@/utils/productionLogger';
 import { logSuspiciousActivity } from '@/utils/securityLogger';
+import { getCachedAnalysis, setCachedAnalysis } from '@/services/cacheService';
+import { truncateToTokenLimit } from '@/utils/tokenLimiter';
+import { safeGPTCall } from '@/lib/gptClient';
 import { AIAnalysisResult } from '@/types/aiAnalysis';
 
 export const runAIAnalysis = async (documentContent: string, documentName: string, documentId?: string) => {
   try {
-    // Get current user for rate limiting
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('User must be authenticated');
@@ -53,22 +55,94 @@ export const runAIAnalysis = async (documentContent: string, documentName: strin
       logSuspiciousActivity(user.id, 'multiple_emails_in_document', { documentName, emailCount: emailMatches.length });
     }
 
-    const { data, error } = await supabase.functions.invoke('ai-compliance-analysis', {
-      body: {
-        documentContent: contentValidation.sanitizedValue,
-        documentName: nameValidation.sanitizedValue,
-        documentId
+    // Check cache first
+    if (documentId) {
+      const cached = getCachedAnalysis(documentId);
+      if (cached) {
+        logger.info('Using cached analysis result', { documentName, userId: user.id }, 'AIAnalysisService');
+        return cached;
       }
-    });
-
-    if (error) {
-      logger.error('AI Analysis Error', error, 'AIAnalysisService', user.id);
-      throw new Error('Failed to process document analysis. Please try again.');
     }
 
-    logger.info('AI analysis completed successfully', { documentName, userId: user.id }, 'AIAnalysisService');
-    return data;
+    // Truncate content to token limit
+    const truncatedContent = truncateToTokenLimit(contentValidation.sanitizedValue);
+
+    // Create analysis prompt
+    const prompt = `Analyze the following Federal RFP document content and extract relevant FAR (Federal Acquisition Regulation) clauses. Respond in JSON format with the following structure:
+    {
+      "farClauses": [
+        {
+          "clause": "FAR section number",
+          "title": "Clause title",
+          "relevance": "High/Medium/Low",
+          "description": "Brief description of the clause"
+        }
+      ],
+      "complianceGaps": [
+        {
+          "area": "Compliance area",
+          "severity": "High/Medium/Low",
+          "description": "Description of the gap"
+        }
+      ],
+      "recommendations": [
+        {
+          "priority": "High/Medium/Low",
+          "action": "Recommended action",
+          "rationale": "Explanation for the recommendation"
+        }
+      ]
+    }
+
+    Document Content:
+    ${truncatedContent}`;
+
+    try {
+      // Try direct GPT call first
+      const result = await safeGPTCall({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3
+      });
+
+      const analysisResult = {
+        documentId: documentId || 'unknown',
+        userId: user.id,
+        result: result,
+        timestamp: new Date().toISOString()
+      };
+
+      // Cache the result
+      if (documentId) {
+        setCachedAnalysis(documentId, analysisResult);
+      }
+
+      logger.info('AI analysis completed successfully via direct GPT call', { documentName, userId: user.id }, 'AIAnalysisService');
+      return analysisResult;
+
+    } catch (gptError) {
+      logger.warn('Direct GPT call failed, falling back to Supabase function', { error: gptError, documentName, userId: user.id }, 'AIAnalysisService');
+      
+      // Fallback to Supabase edge function
+      const { data, error } = await supabase.functions.invoke('ai-compliance-analysis', {
+        body: {
+          documentContent: truncatedContent,
+          documentName: nameValidation.sanitizedValue,
+          documentId
+        }
+      });
+
+      if (error) {
+        logger.error('Supabase AI Analysis Error', error, 'AIAnalysisService', user.id);
+        throw new Error('Failed to process document analysis. Please try again.');
+      }
+
+      logger.info('AI analysis completed successfully via Supabase function', { documentName, userId: user.id }, 'AIAnalysisService');
+      return data;
+    }
+
   } catch (error: any) {
+    logger.error('AI analysis failed', error, 'AIAnalysisService');
     return Promise.reject(handleApiError(error, 'runAIAnalysis'));
   }
 };
