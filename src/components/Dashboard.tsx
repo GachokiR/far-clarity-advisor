@@ -178,7 +178,7 @@ export const Dashboard = () => {
               Admin View
             </Button>
             <Button 
-              variant={viewMode === 'user' ? 'default' : 'outline'}
+              variant={viewMode !== 'admin' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('user')}
             >
