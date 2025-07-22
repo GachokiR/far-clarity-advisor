@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,7 +14,10 @@ import Auth from "./pages/Auth";
 import { SecurityDashboard } from "./pages/admin/SecurityDashboard";
 import Analysis from "./pages/Analysis";
 import Documents from "./pages/Documents";
+import DocumentUpload from "./pages/DocumentUpload";
 import Compliance from "./pages/Compliance";
+import Checklists from "./pages/Checklists";
+import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
@@ -56,8 +58,11 @@ const App = () => {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/documents" element={<Documents />} />
+                    <Route path="/documents/upload" element={<DocumentUpload />} />
                     <Route path="/analysis" element={<Analysis />} />
                     <Route path="/compliance" element={<Compliance />} />
+                    <Route path="/checklists" element={<Checklists />} />
+                    <Route path="/analytics" element={<Analytics />} />
                     <Route path="/admin/security" element={<SecurityDashboard />} />
                     <Route path="/reports" element={<Reports />} />
                     <Route path="*" element={<NotFound />} />

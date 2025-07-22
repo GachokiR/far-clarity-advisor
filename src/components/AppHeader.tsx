@@ -32,7 +32,10 @@ export const AppHeader = () => {
 
   const navItems = [
     { path: '/documents', label: 'Documents' },
+    { path: '/documents/upload', label: 'Upload' },
     { path: '/compliance', label: 'Compliance' },
+    { path: '/checklists', label: 'Checklists' },
+    { path: '/analytics', label: 'Analytics' },
     ...(isAdmin ? [{ path: '/admin/security', label: 'Security' }] : [])
   ];
 
