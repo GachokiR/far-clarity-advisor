@@ -7,6 +7,10 @@ import LandingPage from '@/pages/LandingPage'
 import Dashboard from '@/components/Dashboard'
 import Upload from '@/pages/Documents/Upload'
 import Security from '@/pages/Admin/Security'
+import Analysis from '@/pages/Analysis'
+import Compliance from '@/pages/Compliance'
+import Documents from '@/pages/Documents'
+import Reports from '@/pages/Reports'
 import { AuthForm } from '@/components/AuthForm'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -46,6 +50,38 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Security />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analysis"
+        element={
+          <ProtectedRoute>
+            <Analysis />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/compliance"
+        element={
+          <ProtectedRoute>
+            <Compliance />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/documents"
+        element={
+          <ProtectedRoute>
+            <Documents />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <Reports />
           </ProtectedRoute>
         }
       />

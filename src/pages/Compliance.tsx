@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, AlertCircle, Clock, FileText, Plus } from "lucide-react";
-import { AppHeader } from "@/components/AppHeader";
+import AppLayout from "@/components/layout/AppLayout";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Compliance() {
@@ -95,10 +95,8 @@ export default function Compliance() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      
-      <div className="container mx-auto px-4 py-8" data-tour="compliance">
+    <AppLayout>
+      <div data-tour="compliance">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Compliance Management</h1>
@@ -228,6 +226,6 @@ export default function Compliance() {
           </Card>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

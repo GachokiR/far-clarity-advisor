@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, FileText, Download, Calendar, TrendingUp, AlertCircle } from "lucide-react";
-import { AppHeader } from "@/components/AppHeader";
+import AppLayout from "@/components/layout/AppLayout";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Reports() {
@@ -117,168 +117,164 @@ export default function Reports() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
-            <p className="text-muted-foreground">
-              Generate and manage compliance and security reports
-            </p>
-          </div>
+    <AppLayout>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
+          <p className="text-muted-foreground">
+            Generate and manage compliance and security reports
+          </p>
+        </div>
+        
+        <Button onClick={handleGenerateReport} className="flex items-center space-x-2">
+          <FileText className="h-4 w-4" />
+          <span>Generate Report</span>
+        </Button>
+      </div>
+
+      <div className="grid gap-6">
+        {/* Report Summary */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{reportSummary.totalReports}</div>
+              <p className="text-xs text-muted-foreground">Generated this month</p>
+            </CardContent>
+          </Card>
           
-          <Button onClick={handleGenerateReport} className="flex items-center space-x-2">
-            <FileText className="h-4 w-4" />
-            <span>Generate Report</span>
-          </Button>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Analyses Completed</CardTitle>
+              <BarChart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{reportSummary.completedAnalyses}</div>
+              <p className="text-xs text-muted-foreground">Documents processed</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Compliance Score</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{reportSummary.complianceScore}%</div>
+              <p className="text-xs text-muted-foreground">Average compliance rating</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Critical Findings</CardTitle>
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{reportSummary.criticalFindings}</div>
+              <p className="text-xs text-muted-foreground">Require immediate attention</p>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid gap-6">
-          {/* Report Summary */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{reportSummary.totalReports}</div>
-                <p className="text-xs text-muted-foreground">Generated this month</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Analyses Completed</CardTitle>
-                <BarChart className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{reportSummary.completedAnalyses}</div>
-                <p className="text-xs text-muted-foreground">Documents processed</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Compliance Score</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{reportSummary.complianceScore}%</div>
-                <p className="text-xs text-muted-foreground">Average compliance rating</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Critical Findings</CardTitle>
-                <AlertCircle className="h-4 w-4 text-red-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{reportSummary.criticalFindings}</div>
-                <p className="text-xs text-muted-foreground">Require immediate attention</p>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Report Generation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Generate Custom Report</CardTitle>
+            <CardDescription>
+              Create customized reports for specific time periods and requirements
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground mb-2 block">Time Period</label>
+                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Last 7 days</SelectItem>
+                    <SelectItem value="30">Last 30 days</SelectItem>
+                    <SelectItem value="90">Last 3 months</SelectItem>
+                    <SelectItem value="365">Last year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button onClick={handleGenerateReport} className="flex items-center space-x-2">
+                <BarChart className="h-4 w-4" />
+                <span>Generate</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Report Generation */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Available Reports */}
           <Card>
             <CardHeader>
-              <CardTitle>Generate Custom Report</CardTitle>
+              <CardTitle>Available Reports</CardTitle>
               <CardDescription>
-                Create customized reports for specific time periods and requirements
+                Download and manage your generated reports
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4 items-end">
-                <div className="flex-1">
-                  <label className="text-sm font-medium text-foreground mb-2 block">Time Period</label>
-                  <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">Last 7 days</SelectItem>
-                      <SelectItem value="30">Last 30 days</SelectItem>
-                      <SelectItem value="90">Last 3 months</SelectItem>
-                      <SelectItem value="365">Last year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button onClick={handleGenerateReport} className="flex items-center space-x-2">
-                  <BarChart className="h-4 w-4" />
-                  <span>Generate</span>
-                </Button>
+              <div className="space-y-4">
+                {availableReports.map((report) => (
+                  <div key={report.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-foreground mb-1">{report.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-2">{report.description}</p>
+                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>{report.generated}</span>
+                        <span>•</span>
+                        <span>{report.type}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 ml-4">
+                      {getStatusBadge(report.status)}
+                      {report.status === 'ready' && (
+                        <Button variant="outline" size="sm" onClick={() => handleDownloadReport(report.title)}>
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Available Reports */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Available Reports</CardTitle>
-                <CardDescription>
-                  Download and manage your generated reports
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {availableReports.map((report) => (
-                    <div key={report.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                      <div className="flex-1">
-                        <h3 className="font-medium text-foreground mb-1">{report.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">{report.description}</p>
-                        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          <span>{report.generated}</span>
-                          <span>•</span>
-                          <span>{report.type}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2 ml-4">
-                        {getStatusBadge(report.status)}
-                        {report.status === 'ready' && (
-                          <Button variant="outline" size="sm" onClick={() => handleDownloadReport(report.title)}>
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Latest report generation and analysis activity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    {getActivityIcon(activity.type)}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{activity.action}</p>
+                      <p className="text-xs text-muted-foreground">{activity.time}</p>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>
-                  Latest report generation and analysis activity
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      {getActivityIcon(activity.type)}
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">{activity.action}</p>
-                        <p className="text-xs text-muted-foreground">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
