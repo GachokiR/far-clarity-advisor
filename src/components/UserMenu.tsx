@@ -22,6 +22,10 @@ export const UserMenu = () => {
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Debug logging
+  console.log('UserMenu - user:', user);
+  console.log('UserMenu - restartTour available:', typeof restartTour);
+
   const handleLogout = async () => {
     setIsLoggingOut(true);
     debug.auth('User logout initiated');
