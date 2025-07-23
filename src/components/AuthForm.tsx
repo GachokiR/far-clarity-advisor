@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { validateEmail, validatePassword } from "@/utils/inputValidation";
 import { authRateLimiter } from "@/utils/rateLimiting";
@@ -28,13 +28,13 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   
-  const { signIn, signUp, isConnected } = useAuth();
+  const { signIn, signUp } = useAuth();
   const { startDemoMode } = useDemoAuth();
   const { loading: demoLoading, error: demoError } = useDemoMode();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  console.log('AuthForm rendering, isLogin:', isLogin, 'isConnected:', isConnected);
+  console.log('AuthForm rendering, isLogin:', isLogin);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

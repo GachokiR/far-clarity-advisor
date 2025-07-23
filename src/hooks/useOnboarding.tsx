@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 
 export interface OnboardingStep {
   id: string;

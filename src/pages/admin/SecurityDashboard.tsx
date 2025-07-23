@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Users, Activity, AlertTriangle, Lock, Key } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { rbacService } from '@/utils/rbacService';

@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useDemoMode } from '@/hooks/useDemoMode';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 
 interface DemoAuthContextType {
   isDemoUser: boolean;

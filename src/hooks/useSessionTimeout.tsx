@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { useToast } from './use-toast';
 
 interface UseSessionTimeoutProps {

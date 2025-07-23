@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { getUserProfile, upgradeUserTier, isTrialExpired, type UserProfile } from "@/services/profileService";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Crown, Clock, Users, FileText, BarChart3, Zap } from "lucide-react";
 
 export const SubscriptionTier = () => {

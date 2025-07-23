@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { useDemoAuth } from '@/hooks/useDemoAuth';
 import { useDemoMode } from '@/hooks/useDemoMode';
 import { useTour } from '@/components/tour/TourProvider';

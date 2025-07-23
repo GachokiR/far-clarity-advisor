@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { getUserProfile, updateUserProfile, type UserProfile } from "@/services/profileService";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/components/providers/auth-provider";
 import { AccountSecurity } from "./AccountSecurity";
 import { SubscriptionTier } from "./SubscriptionTier";
 import { User, Settings, Shield, Crown } from "lucide-react";
