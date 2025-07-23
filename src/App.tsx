@@ -8,6 +8,8 @@ import { DemoAuthProvider } from "@/hooks/useDemoAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { TourProvider } from "@/components/tour/TourProvider";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AppLayout } from "@/components/AppLayout";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -54,17 +56,82 @@ const App = () => {
               <BrowserRouter>
                 <TourProvider>
                   <Routes>
+                    {/* Public routes */}
                     <Route path="/" element={<LandingPage />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/auth" element={<Auth />} />
-                    <Route path="/documents" element={<Documents />} />
-                    <Route path="/documents/upload" element={<DocumentUpload />} />
-                    <Route path="/analysis" element={<Analysis />} />
-                    <Route path="/compliance" element={<Compliance />} />
-                    <Route path="/checklists" element={<Checklists />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/admin/security" element={<SecurityDashboard />} />
-                    <Route path="/reports" element={<Reports />} />
+                    
+                    {/* Protected routes with layout */}
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <Dashboard />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Document routes */}
+                    <Route path="/documents" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <Documents />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/documents/upload" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <DocumentUpload />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Analysis and compliance routes */}
+                    <Route path="/analysis" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <Analysis />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/compliance" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <Compliance />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/checklists" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <Checklists />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/analytics" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <Analytics />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/reports" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <Reports />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Admin routes */}
+                    <Route path="/admin/security" element={
+                      <ProtectedRoute requireAuth>
+                        <AppLayout>
+                          <SecurityDashboard />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* 404 route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </TourProvider>

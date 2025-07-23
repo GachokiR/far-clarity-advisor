@@ -1,17 +1,11 @@
 
-import { AppHeader } from "@/components/AppHeader";
 import { FileUpload } from "@/components/FileUpload";
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DocumentUpload() {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [analysisResults, setAnalysisResults] = useState(null);
-
-  if (!user) return <Navigate to="/auth" />;
 
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
@@ -22,10 +16,7 @@ export default function DocumentUpload() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Document Upload</h1>
           <p className="text-muted-foreground">
@@ -43,7 +34,6 @@ export default function DocumentUpload() {
             </p>
           </div>
         )}
-      </div>
     </div>
   );
 }

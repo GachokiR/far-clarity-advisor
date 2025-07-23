@@ -1,16 +1,11 @@
 
-import { AppHeader } from "@/components/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Clock, AlertTriangle } from "lucide-react";
 
 export default function Checklists() {
-  const { user } = useAuth();
-
-  if (!user) return <Navigate to="/auth" />;
 
   const checklists = [
     {
@@ -73,10 +68,7 @@ export default function Checklists() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Compliance Checklists</h1>
           <p className="text-muted-foreground">
@@ -132,7 +124,6 @@ export default function Checklists() {
             </Card>
           ))}
         </div>
-      </div>
     </div>
   );
 }

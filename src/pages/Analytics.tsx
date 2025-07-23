@@ -1,15 +1,9 @@
 
-import { AppHeader } from "@/components/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, FileText, AlertTriangle, CheckCircle } from "lucide-react";
 
 export default function Analytics() {
-  const { user } = useAuth();
-
-  if (!user) return <Navigate to="/auth" />;
 
   const complianceData = [
     { month: 'Jan', compliant: 85, nonCompliant: 15 },
@@ -58,10 +52,7 @@ export default function Analytics() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Analytics Dashboard</h1>
           <p className="text-muted-foreground">
@@ -167,7 +158,6 @@ export default function Analytics() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
