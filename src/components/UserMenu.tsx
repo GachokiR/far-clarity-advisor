@@ -11,17 +11,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
-import { useDemoAuth } from '@/hooks/useDemoAuth';
-import { useDemoMode } from '@/hooks/useDemoMode';
 import { useTour } from '@/components/tour/TourProvider';
-import { User, LogOut, Settings, TestTube, HelpCircle } from 'lucide-react';
+import { User, LogOut, Settings, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { debug } from '@/utils/debug';
 
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
-  const { isDemoUser } = useDemoAuth();
-  const { endDemo, formattedTimeRemaining } = useDemoMode();
   const { restartTour } = useTour();
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -31,22 +27,18 @@ export const UserMenu = () => {
     debug.auth('User logout initiated');
     
     try {
-      if (isDemoUser) {
-        await endDemo();
+      const { error } = await signOut();
+      if (error) {
+        toast({
+          title: "Logout Error",
+          description: error.message,
+          variant: "destructive"
+        });
       } else {
-        const { error } = await signOut();
-        if (error) {
-          toast({
-            title: "Logout Error",
-            description: error.message,
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Logged Out",
-            description: "You have been successfully logged out."
-          });
-        }
+        toast({
+          title: "Logged Out",
+          description: "You have been successfully logged out."
+        });
       }
     } catch (error) {
       debug.error('Logout error', error, 'AUTH');
@@ -66,7 +58,6 @@ export const UserMenu = () => {
   };
 
   const getUserDisplayName = () => {
-    if (isDemoUser) return 'Demo User';
     return user?.email || 'User';
   };
 
@@ -91,12 +82,6 @@ export const UserMenu = () => {
             <p className="text-xs leading-none text-muted-foreground">
               {user?.email}
             </p>
-            {isDemoUser && formattedTimeRemaining && (
-              <div className="flex items-center space-x-1 text-xs text-amber-600">
-                <TestTube className="h-3 w-3" />
-                <span>Demo: {formattedTimeRemaining}</span>
-              </div>
-            )}
           </div>
         </DropdownMenuLabel>
         

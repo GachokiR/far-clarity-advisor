@@ -4,8 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { ComplianceAnalysis } from '@/components/ComplianceAnalysis';
 import { BreadcrumbNavigation } from '@/components/ui/breadcrumb-navigation';
 import { AppHeader } from '@/components/AppHeader';
-import { DemoBanner } from '@/components/DemoBanner';
-import { useDemoAuth } from '@/hooks/useDemoAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, ArrowLeft } from 'lucide-react';
@@ -13,7 +11,6 @@ import { debug } from '@/utils/debug';
 
 const Analysis = () => {
   const navigate = useNavigate();
-  const { isDemoUser } = useDemoAuth();
   const [analysisResults, setAnalysisResults] = useState<any>(null);
 
   useEffect(() => {
@@ -44,7 +41,6 @@ const Analysis = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <AppHeader />
-        {isDemoUser && <DemoBanner />}
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardHeader>
@@ -71,7 +67,6 @@ const Analysis = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader />
-      {isDemoUser && <DemoBanner />}
       <div className="container mx-auto px-4 py-8">
         <BreadcrumbNavigation 
           items={breadcrumbItems}

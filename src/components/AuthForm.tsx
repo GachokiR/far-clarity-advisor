@@ -14,9 +14,7 @@ import { logAuthAttempt } from "@/utils/securityLogger";
 import { sanitizeError } from "@/utils/errorSanitizer";
 import { logger } from "@/utils/productionLogger";
 import { EnhancedSignupForm, SignupFormData } from "@/components/EnhancedSignupForm";
-import { DemoModeButton } from "@/components/DemoModeButton";
-import { useDemoAuth } from "@/hooks/useDemoAuth";
-import { useDemoMode } from "@/hooks/useDemoMode";
+
 
 interface AuthFormProps {
   isLogin: boolean;
@@ -29,8 +27,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   const [error, setError] = useState("");
   
   const { signIn, signUp } = useAuth();
-  const { startDemoMode } = useDemoAuth();
-  const { loading: demoLoading, error: demoError } = useDemoMode();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -126,14 +122,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
     }
   };
 
-  const handleStartDemo = async () => {
-    console.log('Starting demo mode');
-    try {
-      await startDemoMode();
-    } catch (error) {
-      console.error('Demo start failed:', error);
-    }
-  };
 
   if (isLogin) {
     return (
@@ -176,11 +164,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
           </Button>
         </form>
 
-        <DemoModeButton 
-          onStartDemo={handleStartDemo} 
-          loading={demoLoading} 
-          error={demoError}
-        />
       </div>
     );
   }
