@@ -1,8 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/UserMenu';
-import { useAuth } from '@/hooks/useAuth';
-import { useDemoAuth } from '@/hooks/useDemoAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { rbacService } from '@/utils/rbacService';
 import { Home, Menu, Shield } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -10,7 +9,6 @@ import { useEffect, useState } from 'react';
 
 export const AppHeader = () => {
   const { user } = useAuth();
-  const { isDemoUser } = useDemoAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -41,11 +39,7 @@ export const AppHeader = () => {
   ];
 
   const handleLogoClick = () => {
-    if (user || isDemoUser) {
-      navigate('/dashboard');
-    } else {
-      navigate('/');
-    }
+    navigate('/dashboard');
   };
 
   const isActivePath = (path: string) => {
@@ -92,7 +86,7 @@ export const AppHeader = () => {
 
           {/* User Menu / Auth Buttons */}
           <div className="flex items-center space-x-2">
-            {user || isDemoUser ? (
+            {user ? (
               <UserMenu />
             ) : (
               <>
