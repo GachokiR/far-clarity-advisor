@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDemoAuth } from "@/hooks/useDemoAuth";
-import { Dashboard } from "@/components/Dashboard";
+import Dashboard from "@/components/Dashboard";
 import { DemoBanner } from "@/components/DemoBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { Loader2 } from "lucide-react";
@@ -96,13 +96,10 @@ const Index = () => {
   debug.log('Rendering main content', { isDemoUser, hasDemoSession: !!demoSession });
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AppHeader />
+    <>
       {isDemoUser && <DemoBanner />}
-      <div className="container mx-auto px-4 py-8">
-        <Dashboard />
-      </div>
-    </div>
+      <Dashboard />
+    </>
   );
 };
 
