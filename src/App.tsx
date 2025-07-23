@@ -57,10 +57,8 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <TourProvider steps={[]} scrollSmooth>
-          <AppRoutes />
-          <Toaster />
-        </TourProvider>
+        <AppRoutes />
+        <Toaster />
       </AuthProvider>
     </Router>
   )

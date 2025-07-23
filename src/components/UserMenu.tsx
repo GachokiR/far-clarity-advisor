@@ -11,14 +11,30 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
-import { useTour } from '@/components/tour/TourProvider';
+// Tour functionality is optional - graceful degradation
 import { User, LogOut, Settings, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { debug } from '@/utils/debug';
 
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
-  const { restartTour } = useTour();
+  
+  // Optional tour functionality - only available when TourProvider is present
+  const handleRestartTour = () => {
+    try {
+      // Dynamic import to avoid context errors
+      import('@/components/tour/TourProvider').then(({ useTour }) => {
+        const { restartTour } = useTour();
+        restartTour();
+      }).catch(() => {
+        // Tour not available, silently ignore
+        console.log('Tour functionality not available');
+      });
+    } catch (error) {
+      // Tour not available, silently ignore
+      console.log('Tour functionality not available');
+    }
+  };
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -97,7 +113,7 @@ export const UserMenu = () => {
           <span>Settings</span>
         </DropdownMenuItem>
         
-        <DropdownMenuItem className="cursor-pointer" onClick={restartTour}>
+        <DropdownMenuItem className="cursor-pointer" onClick={handleRestartTour}>
           <HelpCircle className="mr-2 h-4 w-4" />
           <span>Restart Tour</span>
         </DropdownMenuItem>
