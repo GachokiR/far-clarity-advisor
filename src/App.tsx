@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
-import { TourProvider } from '@reactour/tour'
+import { TourProvider } from '@/components/tour/TourProvider'
 import { AuthProvider, useAuth } from '@/components/providers/auth-provider'
 import { Toaster } from 'sonner'
 
@@ -57,8 +57,10 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
-        <Toaster />
+        <TourProvider>
+          <AppRoutes />
+          <Toaster />
+        </TourProvider>
       </AuthProvider>
     </Router>
   )

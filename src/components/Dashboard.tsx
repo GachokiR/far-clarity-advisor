@@ -1,5 +1,4 @@
 import React from 'react';
-import { TourProvider } from '@reactour/tour';
 import AppLayout from '@/components/layout/AppLayout';
 
 function DashboardContent() {
@@ -13,10 +12,8 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <TourProvider steps={[]} scrollSmooth>
-      <AppLayout>
-        <DashboardContent />
-      </AppLayout>
-    </TourProvider>
+    <AppLayout>
+      <DashboardContent />
+    </AppLayout>
   );
 }
