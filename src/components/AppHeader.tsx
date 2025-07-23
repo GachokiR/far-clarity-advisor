@@ -36,6 +36,7 @@ export const AppHeader = () => {
     { path: '/compliance', label: 'Compliance' },
     { path: '/checklists', label: 'Checklists' },
     { path: '/analytics', label: 'Analytics' },
+    { path: '/reports', label: 'Reports' },
     ...(isAdmin ? [{ path: '/admin/security', label: 'Security' }] : [])
   ];
 
