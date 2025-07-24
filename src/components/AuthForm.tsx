@@ -30,11 +30,8 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  console.log('AuthForm rendering, isLogin:', isLogin);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login form submitted for:', email);
     setLoading(true);
     setError("");
 
@@ -73,7 +70,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
         navigate("/");
       }
     } catch (err: any) {
-      console.error('Unexpected login error:', err);
       const sanitizedError = sanitizeError(err);
       setError(sanitizedError.message);
     } finally {
@@ -82,7 +78,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
   };
 
   const handleSignup = async (formData: SignupFormData) => {
-    console.log('Signup form submitted for:', formData.email);
     setLoading(true);
     setError("");
 
@@ -114,7 +109,6 @@ export const AuthForm = ({ isLogin }: AuthFormProps) => {
         navigate("/");
       }
     } catch (err: any) {
-      console.error('Unexpected signup error:', err);
       const sanitizedError = sanitizeError(err);
       setError(sanitizedError.message);
     } finally {

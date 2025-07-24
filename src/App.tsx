@@ -17,7 +17,7 @@ const Analysis = lazy(() => import('@/pages/Analysis'))
 const Compliance = lazy(() => import('@/pages/Compliance'))
 const Documents = lazy(() => import('@/pages/Documents'))
 const Reports = lazy(() => import('@/pages/Reports'))
-const AuthForm = lazy(() => import('@/components/AuthForm').then(module => ({ default: module.AuthForm })))
+const Auth = lazy(() => import('@/pages/Auth'))
 
 // Analytics tracking component
 function RouteTracker() {
@@ -54,7 +54,7 @@ function AppRoutes() {
             user ? <Navigate to="/dashboard" replace /> : 
             <RouteErrorBoundary routeName="Auth">
               <Suspense fallback={<EnhancedPageLoader routeName="auth" />}>
-                <AuthForm isLogin />
+                <Auth />
               </Suspense>
             </RouteErrorBoundary>
           } 
