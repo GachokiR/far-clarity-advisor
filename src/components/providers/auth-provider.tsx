@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, recoverSession } from '@/integrations/supabase/client';
 
 type AuthContextType = {
   user: User | null;
@@ -21,21 +21,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    // THEN recover existing session
+    recoverSession().then((session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+    }).catch((error) => {
+      console.error('Failed to recover session:', error);
+      setLoading(false);
     });
 
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {

@@ -13,12 +13,9 @@ export const ConnectionStatus = () => {
   const checkConnection = async () => {
     setIsChecking(true);
     try {
-      // Simple health check - try to get session
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        throw error;
-      }
+      // Use the enhanced session recovery for better error handling
+      const { recoverSession } = await import('@/integrations/supabase/client');
+      const session = await recoverSession();
       
       setIsConnected(true);
     } catch (error) {
