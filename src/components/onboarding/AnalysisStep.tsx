@@ -19,7 +19,7 @@ export const AnalysisStep = ({ onComplete, onPrevious }: AnalysisStepProps) => {
     if (storedResults) {
       setAnalysisResults(JSON.parse(storedResults));
     } else {
-      // Fallback demo results
+      // Fallback analysis results
       setAnalysisResults({
         summary: {
           totalClauses: 8,

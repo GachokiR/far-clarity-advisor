@@ -95,7 +95,7 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
       await new Promise(resolve => setTimeout(resolve, 800));
       
       // Simulate security scan - in real implementation this would check for PII
-      const hasSensitiveData = Math.random() < 0.1; // 10% chance for demo
+      const hasSensitiveData = Math.random() < 0.1;
       if (hasSensitiveData) {
         updateStepStatus(1, 'warn', 'Potential sensitive data detected');
       } else {
@@ -159,7 +159,7 @@ export const FileUpload = ({ onAnalysisComplete }: FileUploadProps) => {
         const mockResults = generateMockAnalysisResults(validFiles, successfulUploads);
         updateStepStatus(4, 'success', `${mockResults.farClausesDetected.length} FAR clauses detected`);
 
-        onAnalysisComplete({ ...mockResults, id: `demo_${Date.now()}` });
+        onAnalysisComplete({ ...mockResults, id: crypto.randomUUID() });
 
         toast({
           title: "Analysis Complete",

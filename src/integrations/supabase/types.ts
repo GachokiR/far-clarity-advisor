@@ -297,11 +297,9 @@ export type Database = {
         Row: {
           company: string | null
           created_at: string
-          demo_session_expires_at: string | null
           email: string | null
           first_name: string | null
           id: string
-          is_demo_user: boolean
           last_name: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           subscription_updated_at: string
@@ -313,11 +311,9 @@ export type Database = {
         Insert: {
           company?: string | null
           created_at?: string
-          demo_session_expires_at?: string | null
           email?: string | null
           first_name?: string | null
           id: string
-          is_demo_user?: boolean
           last_name?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           subscription_updated_at?: string
@@ -329,11 +325,9 @@ export type Database = {
         Update: {
           company?: string | null
           created_at?: string
-          demo_session_expires_at?: string | null
           email?: string | null
           first_name?: string | null
           id?: string
-          is_demo_user?: boolean
           last_name?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           subscription_updated_at?: string
@@ -446,10 +440,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-      cleanup_expired_demo_users: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       cleanup_old_security_events: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -491,10 +481,6 @@ export type Database = {
           new_tier: Database["public"]["Enums"]["subscription_tier"]
         }
         Returns: undefined
-      }
-      validate_session_integrity: {
-        Args: { user_id: string }
-        Returns: boolean
       }
     }
     Enums: {

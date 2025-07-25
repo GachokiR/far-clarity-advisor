@@ -217,7 +217,7 @@ export class SampleContractGenerator extends BaseReportService {
           }),
           
           new Paragraph({
-            text: "This is a sample contract for demonstration purposes only. It is designed to showcase typical FAR compliance requirements and contract structures. This document should not be used for actual contracting purposes.",
+            text: "This is a sample contract for testing purposes only. It is designed to showcase typical FAR compliance requirements and contract structures. This document should not be used for actual contracting purposes.",
             alignment: AlignmentType.CENTER,
           }),
         ],

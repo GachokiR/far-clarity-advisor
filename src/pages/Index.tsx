@@ -55,7 +55,7 @@ const Index = () => {
         return;
       }
 
-      // No user and not in demo mode - redirect to landing page
+      // No user - redirect to landing page
       debug.log('No user found, redirecting to landing page');
       navigate("/");
     };

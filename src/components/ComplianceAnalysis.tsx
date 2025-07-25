@@ -40,8 +40,8 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
   const initializeMockChecklists = () => {
     const mockChecklists: ComplianceChecklist[] = [
       {
-        id: "demo-1",
-        user_id: "demo-user",
+        id: crypto.randomUUID(),
+        user_id: "",
         far_clause: "FAR 52.219-14",
         requirements: [
           "Establish subcontracting plan for small business participation",
@@ -55,8 +55,8 @@ export const ComplianceAnalysis = ({ analysisResults }: ComplianceAnalysisProps)
         updated_at: new Date().toISOString()
       },
       {
-        id: "demo-2", 
-        user_id: "demo-user",
+        id: crypto.randomUUID(),
+        user_id: "",
         far_clause: "FAR 52.204-10",
         requirements: [
           "Report executive compensation annually",

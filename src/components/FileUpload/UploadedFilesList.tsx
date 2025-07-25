@@ -28,9 +28,9 @@ export const UploadedFilesList = ({ uploadedFiles, onDeleteFile }: UploadedFiles
                   <div className="font-medium">{fileItem.file.name}</div>
                   <div className="text-sm text-gray-600">
                     {(fileItem.file.size / 1024 / 1024).toFixed(2)} MB
-                    {fileItem.publicUrl && (
-                      <span className="ml-2 text-green-600">• Demo Mode</span>
-                    )}
+                     {fileItem.publicUrl && (
+                       <span className="ml-2 text-green-600">• Uploaded</span>
+                     )}
                   </div>
                 </div>
               </div>

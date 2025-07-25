@@ -24,7 +24,7 @@ class DebugLogger {
       warn: '#d97706', // amber
       error: '#dc2626', // red
       auth: '#7c3aed', // purple
-      demo: '#059669', // emerald
+      
       data: '#0891b2', // cyan
     };
   }
@@ -80,17 +80,6 @@ class DebugLogger {
     }
   }
 
-  demo(message: string, data?: any) {
-    if (isDevelopment) {
-      const formatted = this.formatMessage('demo', 'DEMO', message);
-      console.log(
-        `%c${formatted}`,
-        `color: ${this.getColors().demo}; font-weight: bold;`,
-        data || ''
-      );
-      logger.debug(message, data, 'DEMO');
-    }
-  }
 
   data(message: string, data?: any) {
     if (isDevelopment) {

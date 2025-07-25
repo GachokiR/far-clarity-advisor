@@ -57,7 +57,7 @@ button[class*="bg-blue"] {
   font-weight: 600 !important;
 }
 
-/* Fix secondary/demo buttons */
+/* Fix secondary buttons */
 .bg-slate-100,
 .bg-gray-100 {
   background: rgba(0, 212, 255, 0.15) !important;
@@ -653,7 +653,7 @@ button[class*="primary"]:not([disabled]):hover,
   box-shadow: 0 8px 25px rgba(102, 0, 255, 0.4);
 }
 
-/* Secondary/Demo buttons - fixed contrast */
+/* Secondary buttons - fixed contrast */
 .btn-secondary, 
 button[class*="secondary"]:not([disabled]),
 .bg-gray-100:not([disabled]),

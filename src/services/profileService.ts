@@ -16,8 +16,6 @@ export interface UserProfile {
     max_team_members: number;
   };
   subscription_updated_at: string;
-  is_demo_user: boolean;
-  demo_session_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
