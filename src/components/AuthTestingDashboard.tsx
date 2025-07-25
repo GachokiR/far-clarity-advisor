@@ -33,22 +33,52 @@ export const AuthTestingDashboard = () => {
     setTestResults(prev => ({ ...prev, [testName]: result }));
   };
 
-  // Test 1: Basic Auth Flow
+  // Test 1: Enhanced Signup Flow
   const testSignup = async () => {
     updateTestResult('signup', 'pending');
     addLog('Testing signup flow...');
+    addLog(`Using credentials: ${testEmail}`);
+    addLog(`Redirect URL will be: ${window.location.origin}/`);
+    
     try {
       const result = await signUp(testEmail, testPassword);
+      
       if (result.error) {
         updateTestResult('signup', 'error');
         addLog(`Signup failed: ${result.error.message}`);
+        addLog(`Error code: ${result.error.status || 'unknown'}`);
+        
+        // Handle specific error cases
+        if (result.error.message.includes('already registered')) {
+          addLog('User already exists - this might be expected if testing repeatedly');
+          addLog('Try using a different email or delete the existing user');
+        } else if (result.error.message.includes('email confirmation')) {
+          addLog('Email confirmation required - check your email or disable confirmation in Supabase');
+        } else if (result.error.message.includes('password')) {
+          addLog('Password issue - ensure it meets minimum requirements');
+        }
       } else {
         updateTestResult('signup', 'success');
         addLog('Signup successful');
+        addLog(`User created: ${!!result.data?.user}`);
+        addLog(`Session created: ${!!result.data?.session}`);
+        addLog(`User email: ${result.data?.user?.email}`);
+        
+        if (result.data?.user && !result.data?.session) {
+          addLog('User created but no session - email confirmation may be required');
+          addLog('Check your email for a confirmation link');
+        }
+        
+        if (result.data?.user?.email_confirmed_at) {
+          addLog('Email already confirmed');
+        } else {
+          addLog('Email confirmation pending');
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       updateTestResult('signup', 'error');
-      addLog(`Signup error: ${error}`);
+      addLog(`Signup exception: ${error.message}`);
+      addLog(`Error details: ${JSON.stringify(error, null, 2)}`);
     }
   };
 
@@ -132,22 +162,85 @@ export const AuthTestingDashboard = () => {
     }
   };
 
-  // Test 4: Database Connectivity
+  // Test 4: Enhanced Database Connectivity
   const testDatabaseConnection = async () => {
     updateTestResult('database', 'pending');
     addLog('Testing database connection...');
+    
     try {
-      const { data, error } = await supabase.from('user_roles').select('count').limit(1).single();
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows found" which is fine
-        updateTestResult('database', 'error');
-        addLog(`Database error: ${error.message}`);
+      // Test basic connectivity with a simple auth check
+      addLog('Testing basic Supabase connection...');
+      const { data: authUser, error: authError } = await supabase.auth.getUser();
+      if (authError && authError.message !== 'Auth user not found') {
+        addLog(`Auth service error: ${authError.message}`);
       } else {
-        updateTestResult('database', 'success');
-        addLog('Database connection working');
+        addLog('Basic Supabase connection successful');
       }
-    } catch (error) {
+
+      // Test profiles table access
+      addLog('Testing profiles table access...');
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .limit(1);
+        
+      if (profileError) {
+        addLog(`Profiles table error: ${profileError.message} (Code: ${profileError.code})`);
+      } else {
+        addLog('Profiles table accessible');
+      }
+
+      // Test user_roles table access specifically
+      addLog('Testing user_roles table access...');
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .limit(1);
+        
+      if (rolesError) {
+        addLog(`User roles table error: ${rolesError.message} (Code: ${rolesError.code})`);
+        if (rolesError.message.includes('row-level security')) {
+          addLog('RLS policy may be blocking access to user_roles table');
+          addLog('This is expected if no user is logged in or user has no roles');
+        }
+        if (rolesError.code === '42P01') {
+          addLog('Table does not exist - check database schema');
+        }
+      } else {
+        addLog('User roles table accessible');
+        addLog(`Found ${rolesData?.length || 0} role records`);
+      }
+
+      // Test with current user context if logged in
+      if (user) {
+        addLog(`Testing with current user context: ${user.id}`);
+        const { data: userRoles, error: userRoleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+          
+        if (userRoleError) {
+          addLog(`User-specific role query failed: ${userRoleError.message}`);
+        } else {
+          addLog(`User has ${userRoles?.length || 0} roles assigned`);
+        }
+      }
+
+      // Overall assessment
+      if (!profileError && !rolesError) {
+        updateTestResult('database', 'success');
+        addLog('All database connections successful');
+      } else if (!profileError) {
+        updateTestResult('database', 'info');
+        addLog('Basic database works but user_roles has access restrictions');
+      } else {
+        updateTestResult('database', 'error');
+        addLog('Database connection issues detected');
+      }
+    } catch (error: any) {
       updateTestResult('database', 'error');
-      addLog(`Database connection error: ${error}`);
+      addLog(`Database connection exception: ${error.message}`);
+      addLog(`Stack trace: ${error.stack}`);
     }
   };
 
@@ -223,8 +316,8 @@ export const AuthTestingDashboard = () => {
             Current Authentication Status
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div>
               <Label>Authenticated</Label>
               <Badge variant={isAuthenticated ? 'default' : 'destructive'}>
@@ -233,7 +326,7 @@ export const AuthTestingDashboard = () => {
             </div>
             <div>
               <Label>User ID</Label>
-              <p className="text-sm text-muted-foreground">{user?.id?.slice(0, 8) || 'None'}</p>
+              <p className="text-xs font-mono text-muted-foreground">{user?.id?.slice(0, 8) || 'None'}</p>
             </div>
             <div>
               <Label>Email</Label>
@@ -244,6 +337,22 @@ export const AuthTestingDashboard = () => {
               <Badge variant={session ? 'default' : 'destructive'}>
                 {session ? 'Active' : 'None'}
               </Badge>
+            </div>
+            <div>
+              <Label>Email Confirmed</Label>
+              <Badge variant={user?.email_confirmed_at ? 'default' : 'secondary'}>
+                {user?.email_confirmed_at ? 'Yes' : user ? 'Pending' : 'N/A'}
+              </Badge>
+            </div>
+          </div>
+          
+          <div className="pt-2 border-t">
+            <Label>Environment Info</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
+              <p>URL: {window.location.href}</p>
+              <p>Origin: {window.location.origin}</p>
+              <p>Supabase URL: https://qbrncgvscyyvatdgfidt.supabase.co</p>
+              <p>Auth Flow: PKCE</p>
             </div>
           </div>
         </CardContent>
