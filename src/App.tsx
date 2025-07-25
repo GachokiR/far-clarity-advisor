@@ -62,6 +62,18 @@ function AppRoutes() {
           } 
         />
         
+        {/* Auth Testing Dashboard - accessible without authentication for debugging */}
+        <Route 
+          path="/auth-testing" 
+          element={
+            <RouteErrorBoundary routeName="Auth Testing">
+              <Suspense fallback={<EnhancedPageLoader routeName="testing" />}>
+                <AuthTestingDashboard />
+              </Suspense>
+            </RouteErrorBoundary>
+          } 
+        />
+        
         {/* Protected Routes with nested structure */}
         <Route element={<BaseProtectedRoute />}>
           <Route
@@ -143,18 +155,6 @@ function AppRoutes() {
                 <Suspense fallback={<EnhancedPageLoader routeName="reports" />}>
                   <PermissionProtectedRoute requiredPermissions={['read:analytics']} requireAnyPermission>
                     <Reports />
-                  </PermissionProtectedRoute>
-                </Suspense>
-              </RouteErrorBoundary>
-            }
-          />
-          <Route
-            path="/auth-testing"
-            element={
-              <RouteErrorBoundary routeName="Auth Testing">
-                <Suspense fallback={<EnhancedPageLoader routeName="testing" />}>
-                  <PermissionProtectedRoute requiredRoles={['admin']}>
-                    <AuthTestingDashboard />
                   </PermissionProtectedRoute>
                 </Suspense>
               </RouteErrorBoundary>
