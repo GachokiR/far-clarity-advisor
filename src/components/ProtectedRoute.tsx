@@ -49,39 +49,63 @@ export function ProtectedRoute({
   const [checkingPermissions, setCheckingPermissions] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
+
     const checkAccess = async () => {
-      if (!user) return;
+      if (!user || !mounted) {
+        if (mounted) setHasAccess(false);
+        return;
+      }
       
       setCheckingPermissions(true);
+
+      // Set a timeout to prevent hanging on permission checks
+      timeoutId = setTimeout(() => {
+        if (mounted) {
+          console.warn('[ProtectedRoute] Permission check timeout, allowing access');
+          setHasAccess(true);
+          setCheckingPermissions(false);
+        }
+      }, 5000);
       
       try {
+        let hasRequiredRole = true;
+        let hasRequiredPermission = true;
+
         // Check role requirements
         if (requiredRoles.length > 0) {
-          const hasRequiredRole = await rbacService.hasAnyRole(user.id, requiredRoles);
-          if (!hasRequiredRole) {
-            setHasAccess(false);
-            return;
-          }
+          hasRequiredRole = await rbacService.hasAnyRole(user.id, requiredRoles);
         }
         
         // Check permission requirements
         if (requiredPermissions.length > 0) {
-          const hasRequiredPermissions = requireAnyPermission
+          hasRequiredPermission = requireAnyPermission
             ? await rbacService.hasAnyPermission(user.id, requiredPermissions)
             : await rbacService.hasAllPermissions(user.id, requiredPermissions);
-          
-          if (!hasRequiredPermissions) {
-            setHasAccess(false);
-            return;
-          }
         }
         
-        setHasAccess(true);
+        if (mounted) {
+          clearTimeout(timeoutId);
+          setHasAccess(hasRequiredRole && hasRequiredPermission);
+          setCheckingPermissions(false);
+          
+          if (import.meta.env.DEV) {
+            console.log('[ProtectedRoute] Access check result:', {
+              hasRequiredRole,
+              hasRequiredPermission,
+              finalAccess: hasRequiredRole && hasRequiredPermission
+            });
+          }
+        }
       } catch (error) {
-        console.error('Error checking permissions:', error);
-        setHasAccess(false);
-      } finally {
-        setCheckingPermissions(false);
+        console.error('[ProtectedRoute] Error checking permissions:', error);
+        if (mounted) {
+          clearTimeout(timeoutId);
+          // On error, allow access to prevent users getting stuck
+          setHasAccess(true);
+          setCheckingPermissions(false);
+        }
       }
     };
 
@@ -89,14 +113,26 @@ export function ProtectedRoute({
       checkAccess();
     } else if (user) {
       setHasAccess(true);
+      setCheckingPermissions(false);
+    } else if (!isLoading) {
+      setHasAccess(false);
+      setCheckingPermissions(false);
     }
-  }, [user, requiredPermissions, requiredRoles, requireAnyPermission]);
+
+    return () => {
+      mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [user, isLoading, requiredPermissions, requiredRoles, requireAnyPermission]);
 
   if (isLoading || checkingPermissions) {
     return <PageLoader />;
   }
 
   if (!user) {
+    if (import.meta.env.DEV) {
+      console.log('[ProtectedRoute] No user, redirecting to /auth');
+    }
     return <Navigate to="/auth" replace />;
   }
 

@@ -21,26 +21,72 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+    
+    // Set up auth state listener with enhanced error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!mounted) return;
+        
+        if (import.meta.env.DEV) {
+          console.log(`[AuthProvider] Auth event: ${event}`, {
+            hasSession: !!session,
+            hasUser: !!session?.user
+          });
+        }
+        
+        // Handle session updates
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        
+        // Only set loading to false after we've processed the session
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          setLoading(false);
+        }
+        
+        // Handle specific auth events
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('[AuthProvider] Token refreshed successfully');
+        } else if (event === 'SIGNED_OUT') {
+          console.log('[AuthProvider] User signed out');
+        }
       }
     );
 
-    // THEN recover existing session
-    recoverSession().then((session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    }).catch((error) => {
-      console.error('Failed to recover session:', error);
-      setLoading(false);
-    });
+    // Get initial session - let onAuthStateChange handle the rest
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('[AuthProvider] Initial session error:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+        
+        // The onAuthStateChange will handle setting the session
+        // We just need to ensure loading is set to false if no session
+        if (!session && mounted) {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('[AuthProvider] Failed to initialize auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-    return () => subscription.unsubscribe();
+    initializeAuth();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
