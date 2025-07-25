@@ -18,6 +18,7 @@ const Compliance = lazy(() => import('@/pages/Compliance'))
 const Documents = lazy(() => import('@/pages/Documents'))
 const Reports = lazy(() => import('@/pages/Reports'))
 const Auth = lazy(() => import('@/pages/Auth'))
+const AuthTestingDashboard = lazy(() => import('@/components/AuthTestingDashboard').then(module => ({ default: module.AuthTestingDashboard })))
 
 // Analytics tracking component
 function RouteTracker() {
@@ -139,6 +140,16 @@ function AppRoutes() {
                 <ProtectedRoute requiredPermissions={['read:analytics']} requireAnyPermission>
                   <Reports />
                 </ProtectedRoute>
+              </Suspense>
+            </RouteErrorBoundary>
+          }
+        />
+        <Route
+          path="/auth-testing"
+          element={
+            <RouteErrorBoundary routeName="Auth Testing">
+              <Suspense fallback={<EnhancedPageLoader routeName="testing" />}>
+                <AuthTestingDashboard />
               </Suspense>
             </RouteErrorBoundary>
           }
